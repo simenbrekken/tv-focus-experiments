@@ -1,19 +1,21 @@
 import { html, render } from 'lit-html';
-import { FocusManager } from './focus-manager.js';
+import { focusManagerMixin } from './focus-manager.js';
 import { ReactiveElement } from '@nrk/reactive-element';
 
-export class PageOne extends ReactiveElement {
+export class PageOne extends focusManagerMixin(ReactiveElement) {
   static whenDefinedCallback() {
     customElements.define('page-one-section', PageOneSection);
   }
 
-  get updateComplete() {
-    return new Promise((resolve) => {
-      this.updatePromise.then(() => {
-        const sections = Array.from(this.querySelectorAll('page-one-section'));
-        resolve(Promise.all(sections.map((el) => el.updateComplete)));
-      });
-    });
+  constructor() {
+    super();
+    this.focusAxis = 'vertical';
+  }
+
+  focusChildFilter() {
+    return Array.from(this.children).filter(
+      (child) => child.nodeName === 'PAGE-ONE-SECTION'
+    );
   }
 
   updated() {
@@ -30,16 +32,16 @@ export class PageOne extends ReactiveElement {
         }
       </style>
       <h1>Page One</h1>
-      <page-one-section size="5" data-focusable-element></page-one-section>
-      <page-one-section size="3" data-focusable-element></page-one-section>
-      <page-one-section size="8" data-focusable-element></page-one-section>
-      <page-one-section size="2" data-focusable-element></page-one-section>
-      <page-one-section size="1" data-focusable-element></page-one-section>
+      <page-one-section size="5"></page-one-section>
+      <page-one-section size="3"></page-one-section>
+      <page-one-section size="8"></page-one-section>
+      <page-one-section size="2"></page-one-section>
+      <page-one-section size="1"></page-one-section>
     `;
   }
 }
 
-class PageOneSection extends ReactiveElement {
+class PageOneSection extends focusManagerMixin(ReactiveElement) {
   static get reactiveAttributes() {
     return {
       size: Number,
@@ -48,21 +50,12 @@ class PageOneSection extends ReactiveElement {
 
   constructor() {
     super();
+    this.focusAxis = 'horizontal';
     this.size = 0;
-    this.focusManager;
   }
 
   connectedCallback() {
     super.connectedCallback();
-    this.focusManager = new FocusManager(this);
-  }
-
-  focus() {
-    this.focusManager.activate();
-  }
-
-  blur() {
-    this.focusManager.deactivate();
   }
 
   updated() {
@@ -71,13 +64,9 @@ class PageOneSection extends ReactiveElement {
 
   render() {
     return html`
-      <style></style>
       ${[...new Array(this.size)].map(
         (_, idx) =>
-          html`<a
-            class="page-one-section__item"
-            href="#${idx + 1}"
-            data-focusable-element
+          html`<a class="page-one-section__item" href="#${idx + 1}"
             >item ${idx + 1}</a
           >`
       )}
@@ -86,6 +75,5 @@ class PageOneSection extends ReactiveElement {
 
   disconnectedCallback() {
     super.disconnectedCallback();
-    this.focusManager.deactivate();
   }
 }
