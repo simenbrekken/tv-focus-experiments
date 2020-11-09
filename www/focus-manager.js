@@ -42,9 +42,14 @@ function handleKeydownEvent(event) {
         while ((target = target.parentElement)) {
           const manager = managersByTarget.get(target);
 
-          if (manager && manager.axis === axis) {
+          if (
+            manager &&
+            manager.axis === axis &&
+            manager.hasActiveElement(offset)
+          ) {
             manager.activeElementIndex += offset;
-            target.focus();
+            manager.target.focus();
+            return;
           }
         }
       }
@@ -56,47 +61,78 @@ export class FocusManager {
   /**
    * Constructor
    * @param { HTMLElement } target
-   * @param { 'vertical' | 'horizontal' } axis
+   * @param { 'vertical' | 'horizontal' } [axis]
    * @param { string } [childSelector]
    */
-  constructor(target, axis, childSelector = '*') {
+  constructor(target, axis = 'vertical', childSelector = '*') {
+    this.activeElementIndex = 0;
     this.axis = axis;
     this.childSelector = childSelector;
     this.target = target;
     this.target.tabIndex = 0;
-
-    this._activeElementIndex = 0;
 
     this.target.addEventListener('focus', this);
 
     managersByTarget.set(this.target, this);
 
     if (document.activeElement === this.target) {
+      activeManager = this;
       this.focusActiveElement();
     }
   }
 
-  get activeElementIndex() {
-    return this._activeElementIndex;
-  }
-
-  set activeElementIndex(value) {
+  get activeElement() {
     const children = this.getFocusableChildren();
 
-    this._activeElementIndex = Math.max(
-      0,
-      Math.min(value, children.length - 1)
-    );
+    return children[this.activeElementIndex];
   }
 
-  focusActiveElement(offset = 0) {
-    const children = this.getFocusableChildren();
+  hasActiveElement(offset) {
     const index = this.activeElementIndex + offset;
-    const activeElement = children[index];
+    const children = this.getFocusableChildren();
+
+    return index >= 0 && index < children.length;
+  }
+
+  focusActiveElement(relatedTarget) {
+    if (this !== activeManager) {
+      return;
+    }
+
+    let activeElement = this.activeElement;
 
     if (activeElement) {
-      this.activeElementIndex = index;
-      activeElement.focus();
+      const activeElementManager = managersByTarget.get(activeElement);
+
+      if (activeElementManager) {
+        activeManager = activeElementManager;
+        activeElementManager.focusActiveElement(relatedTarget);
+      } else {
+        if (relatedTarget) {
+          const children = this.getFocusableChildren();
+          let minDistance = Number.POSITIVE_INFINITY;
+          let index = 0;
+
+          for (let i = 0; i < children.length; i++) {
+            const child = children[i];
+            const distance = distanceBetweenElements(
+              child,
+              relatedTarget,
+              this.axis
+            );
+
+            if (distance < minDistance) {
+              index = i;
+              minDistance = distance;
+            }
+          }
+
+          this.activeElementIndex = index;
+          activeElement = this.activeElement;
+        }
+
+        activeElement.focus();
+      }
     } else {
       console.warn('no active element found');
     }
@@ -109,11 +145,11 @@ export class FocusManager {
   }
 
   handleEvent(event) {
-    const { type } = event;
+    const { relatedTarget, type } = event;
 
     if (type === 'focus') {
       activeManager = this;
-      this.focusActiveElement();
+      this.focusActiveElement(relatedTarget);
     }
 
     super.handleEvent?.(event);
@@ -135,18 +171,34 @@ export function focusManagerMixin(BaseClass) {
     }
 
     connectedCallback() {
-      super.connectedCallback();
+      super.connectedCallback?.();
       this.focusManager = new FocusManager(
         this,
-        this.focusAxis || 'vertical',
+        this.focusAxis,
         this.focusChildSelector
       );
     }
 
     discconnectedCallback() {
-      super.discconnectedCallback();
+      super.discconnectedCallback?.();
       this.focusManager.destroy();
       this.focusManager = undefined;
     }
   };
+}
+
+function distanceBetweenElements(a, b, axis) {
+  const aBounds = a.getBoundingClientRect();
+  const bBounds = b.getBoundingClientRect();
+  const bMid =
+    axis === 'vertical'
+      ? bBounds.y + bBounds.height / 2
+      : bBounds.x + bBounds.width / 2;
+  const aStart = axis === 'vertical' ? aBounds.y : aBounds.x;
+  const aEnd =
+    axis === 'vertical'
+      ? aBounds.y + aBounds.height
+      : aBounds.x + aBounds.width;
+
+  return Math.min(Math.abs(aStart - bMid), Math.abs(aEnd - bMid));
 }
