@@ -48,6 +48,10 @@ function getOrientation(element) {
  * @returns {number}
  */
 function getActiveIndex(element) {
+  if (element.dataset.activate === 'first') {
+    return 0;
+  }
+
   return Number(element.dataset.focusActiveIndex) || 0;
 }
 
@@ -60,10 +64,9 @@ function isFocusable(element) {
 
 /**
  * @param {HTMLElement} element
- * @returns {HTMLElement}
  */
 function hasFocusableChildren(element) {
-  return element.querySelector('[data-focusable]');
+  return element.querySelector('[data-focusable]') !== null;
 }
 
 /**
@@ -203,6 +206,41 @@ function getDistance(a, b) {
   );
 }
 
+/**
+ *
+ * @param {HTMLElement} source
+ * @param {string} direction
+ */
+function findFocusable(source, direction) {
+  const container = climb(source, direction);
+
+  if (!container) {
+    return;
+  }
+
+  const nextContainer = getNextChildInDirection(container, direction);
+
+  if (nextContainer.dataset.activate === 'closest') {
+    let closestChild;
+    let minDistance = Number.POSITIVE_INFINITY;
+
+    const children = nextContainer.querySelectorAll('[data-focusable]');
+
+    for (const child of children) {
+      const distance = getDistance(source, child);
+
+      if (distance < minDistance) {
+        minDistance = distance;
+        closestChild = child;
+      }
+    }
+
+    return closestChild;
+  }
+
+  return dig(nextContainer, direction);
+}
+
 function handleKeyDown(event) {
   const element = event.target;
 
@@ -216,35 +254,11 @@ function handleKeyDown(event) {
     return;
   }
 
-  const container = climb(element, direction);
+  const focusable = findFocusable(element, direction);
 
-  if (!container) {
-    return;
+  if (focusable) {
+    focusable.focus();
   }
-
-  const next = getNextChildInDirection(container, direction);
-  const focusable = dig(next, direction);
-
-  if (!focusable) {
-    return;
-  }
-
-  let minDistance = Number.POSITIVE_INFINITY;
-  let candidate = focusable;
-
-  const candidates = next.querySelectorAll('[data-focusable]');
-
-  for (let i = 0; i < candidates.length; i++) {
-    const child = candidates.item(i);
-    const distance = getDistance(element, child);
-
-    if (distance < minDistance) {
-      minDistance = distance;
-      candidate = child;
-    }
-  }
-
-  candidate.focus();
 }
 
 function handleFocusIn(event) {
