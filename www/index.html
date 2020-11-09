@@ -32,7 +32,40 @@
     </style>
   </head>
   <body>
-    <tv-series-page></tv-series-page>
+    <div data-focus="root-1" data-orientation="vertical">
+      <div>Menu</div>
+      <div data-focus="menu">
+        <div data-focus="menu-home" data-focusable tabindex="0">Home</div>
+        <div data-focus="menu-live" data-focusable tabindex="0">Live</div>
+        <div data-focus="menu-search" data-focusable tabindex="0">Search</div>
+      </div>
+      <div data-focus="sections" data-orientation="vertical">
+        <div>Section 1</div>
+        <div data-focus="section-1">
+          <div data-focus="section-1-plug-1" data-focusable tabindex="0">
+            Plug 1
+          </div>
+          <div data-focus="section-1-plug-2" data-focusable tabindex="0">
+            Plug 2
+          </div>
+          <div data-focus="section-1-plug-3" data-focusable tabindex="0">
+            Plug 3
+          </div>
+        </div>
+        <div>Section 2</div>
+        <div data-focus="section-2">
+          <div data-focus="section-2-plug-1" data-focusable tabindex="0">
+            Plug 1
+          </div>
+          <div data-focus="section-2-plug-2" data-focusable tabindex="0">
+            Plug 2
+          </div>
+          <div data-focus="section-2-plug-3" data-focusable tabindex="0">
+            Plug 3
+          </div>
+        </div>
+      </div>
+    </div>
 
     <div data-focus="root-2" data-orientation="vertical">
       <div>Menu</div>
