@@ -1,43 +1,15 @@
 <html>
   <head>
     <script type="module" src="./index.js"></script>
-    <style>
-      body {
-        font-family: sans-serif;
-      }
-
-      [data-focus] {
-        display: flex;
-        flex-direction: row;
-        border: 1px solid blue;
-        padding: 5px;
-        margin: 10px;
-        background-color: rgba(0, 0, 255, 0.2);
-      }
-
-      [data-focus][data-orientation='vertical'] {
-        flex-direction: column;
-        border: 1px solid red;
-        background-color: rgba(255, 0, 0, 0.2);
-      }
-
-      :focus {
-        outline: 0;
-      }
-
-      :focus,
-      .focused {
-        background-color: yellow;
-      }
-    </style>
+    <link rel="stylesheet" href="./index.css" />
   </head>
   <body>
-    <div data-focus="root-1" data-orientation="vertical">
+    <div data-focus="front-page" data-orientation="vertical">
       <div>Menu</div>
       <div data-focus="menu">
-        <div data-focus="menu-home" data-focusable tabindex="0">Home</div>
-        <div data-focus="menu-live" data-focusable tabindex="0">Live</div>
-        <div data-focus="menu-search" data-focusable tabindex="0">Search</div>
+        <div data-focus="home" data-focusable tabindex="0">Home</div>
+        <div data-focus="live" data-focusable tabindex="0">Live</div>
+        <div data-focus="search" data-focusable tabindex="0">Search</div>
       </div>
       <div data-focus="sections" data-orientation="vertical">
         <div>Section 1</div>
@@ -67,7 +39,7 @@
       </div>
     </div>
 
-    <div data-focus="root-2" data-orientation="vertical">
+    <div data-focus="search-page" data-orientation="vertical">
       <div>Menu</div>
       <div data-focus="menu">
         <div data-focus="menu-home" data-focusable tabindex="0">Home</div>
