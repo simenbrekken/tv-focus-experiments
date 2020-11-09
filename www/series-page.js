@@ -53,8 +53,8 @@ class SeriesPageElement extends ReactiveElement {
   render() {
     return html`<div>
       <h1>Series page</h1>
-      <div data-focus="sections" data-orientation="vertical">
-        <div data-focus="section-1" data-orientation="horizontal">
+      <div data-focus data-orientation="vertical">
+        <div data-focus>
           ${this.items
             .slice(0, 3)
             .map(
@@ -257,17 +257,6 @@ function handleKeyDown(event) {
   console.debug('Focusing', focusable.dataset.focus);
 
   focusable.focus();
-
-  /*
-  const spatialEvent = new CustomEvent('spatial', {
-    bubbles: true,
-    cancelable: true,
-    detail: { direction },
-  });
-  event.target.dispatchEvent(spatialEvent);
-
-  console.log(event.defaultPrevented);
-  */
 
   setActive(focusable);
 }
