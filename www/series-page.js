@@ -1,83 +1,32 @@
-import { ReactiveElement } from '../node_modules/@nrk/reactive-element/index.mjs';
-import { html, render } from '../node_modules/lit-html/lit-html.js';
+// @ts-check
+// import { ReactiveElement } from '@nrk/reactive-element';
+// import { html, render } from '../node_modules/lit-html/lit-html.js';
 
-class SeriesPageElement extends ReactiveElement {
-  static get reactiveProperties() {
-    return {
-      items: Object,
-    };
-  }
+// class SeriesPageElement extends ReactiveElement {
+//   connectedCallback() {
+//     super.connectedCallback();
 
-  items = [];
+//     setTimeout(() => {
+//       this.items = [1, 2, 3];
+//     }, 25);
 
-  constructor() {
-    super();
+//     setTimeout(() => {
+//       this.items = [1, 2, 3, 4, 5, 6];
+//     }, 75);
+//   }
 
-    this.handleSpatial = this.handleSpatial.bind(this);
-  }
+//   updated() {
+//     // render(this.render(), this);
 
-  connectedCallback() {
-    super.connectedCallback();
+//     const candidate =
+//       document.activeElement.dataset.focusable === undefined &&
+//       this.querySelector('[data-focusable]');
 
-    setTimeout(() => {
-      this.items = [1, 2, 3];
-    }, 25);
-
-    setTimeout(() => {
-      this.items = [1, 2, 3, 4, 5, 6];
-    }, 75);
-
-    // setTimeout(() => {
-    //   this.items = [4, 5, 6, 7, 8, 9];
-    // }, 1000);
-
-    this.addEventListener('spatial', this.handleSpatial.bind(this));
-  }
-
-  handleSpatial(event) {
-    console.log('Handling spatial', event);
-  }
-
-  updated() {
-    render(this.render(), this);
-
-    const candidate =
-      document.activeElement.dataset.focusable === undefined &&
-      this.querySelector('[data-focusable]');
-
-    if (candidate) {
-      candidate.focus();
-    }
-  }
-
-  render() {
-    return html`<div>
-      <h1>Series page</h1>
-      <div data-focus data-orientation="vertical">
-        <div data-focus>
-          ${this.items
-            .slice(0, 3)
-            .map(
-              (item) =>
-                html`<a href="#${item}" data-focus="item-${item}" data-focusable
-                  >${item}</a
-                >`
-            )}
-        </div>
-        <div data-focus="section-2" data-orientation="horizontal">
-          ${this.items
-            .slice(3)
-            .map(
-              (item) =>
-                html`<a href="#${item}" data-focus="item-${item}" data-focusable
-                  >${item}</a
-                >`
-            )}
-        </div>
-      </div>
-    </div>`;
-  }
-}
+//     if (candidate) {
+//       candidate.focus();
+//     }
+//   }
+// }
 
 const directionByKey = {
   ArrowDown: 'down',
@@ -135,12 +84,12 @@ function getNextChildInDirection(container, direction) {
 }
 
 function climb(element, direction) {
-  console.debug('Climbing from', element.dataset.focus);
-
   if (!element) {
     console.debug('Cannot climb, element is not defined');
     return;
   }
+
+  console.debug('Climbing from', element.dataset.focus);
 
   // If we're on a leaf, climb up
   if (element.dataset.focusable !== undefined) {
@@ -154,15 +103,32 @@ function climb(element, direction) {
     return climb(element.parentElement.closest('[data-focus]'), direction);
   }
 
+  const orientation = element.dataset.orientation || 'horizontal';
+
   // We have children, but the orientation doesn't match, so try our parent
-  if (element.dataset.orientation !== orientationByDirection[direction]) {
+  if (orientation !== orientationByDirection[direction]) {
     console.debug('Orientation does not match');
     console.debug(
       element.dataset.focus,
       'is',
-      element.dataset.orientation,
+      orientation,
       'but we are moving',
       orientationByDirection[direction] + 'ly'
+    );
+    return climb(element.parentElement.closest('[data-focus]'), direction);
+  }
+
+  const candidates = Array.from(
+    element.querySelectorAll(':scope > [data-focus]')
+  );
+  const next = getNextChildInDirection(element, direction);
+  const activeIndex = Number(element.dataset.focusActiveIndex) || 0;
+  const activeChild = candidates[activeIndex];
+
+  if (next === activeChild) {
+    console.debug(
+      'Next and active are the same, climbing from',
+      element.parentElement.dataset.focus
     );
     return climb(element.parentElement.closest('[data-focus]'), direction);
   }
@@ -224,7 +190,24 @@ function setActive(element) {
   return setActive(container);
 }
 
-// https://github.com/bbc/lrud/blob/master/src/index.ts#L650
+export function getElementCenterRect(element) {
+  const rect = element.getBoundingClientRect();
+
+  return {
+    x: rect.left + rect.width / 2,
+    y: rect.top + rect.height / 2,
+  };
+}
+
+export function getDistanceBetween(a, b) {
+  const centerA = getElementCenterRect(a);
+  const centerB = getElementCenterRect(b);
+
+  return Math.sqrt(
+    Math.pow(centerA.x - centerB.x, 2) + Math.pow(centerA.y - centerB.y, 2)
+  );
+}
+
 function handleKeyDown(event) {
   const element = event.target;
 
@@ -254,11 +237,35 @@ function handleKeyDown(event) {
     return;
   }
 
-  console.debug('Focusing', focusable.dataset.focus);
+  const candidates = next.querySelectorAll('[data-focusable]');
 
-  focusable.focus();
+  let minDistance = Number.POSITIVE_INFINITY;
+  let candidate = focusable;
 
-  setActive(focusable);
+  for (let i = 0; i < candidates.length; i++) {
+    const child = candidates.item(i);
+    const distance = getDistanceBetween(element, child);
+
+    if (distance < minDistance) {
+      minDistance = distance;
+      candidate = child;
+    }
+  }
+
+  console.debug(
+    'Moving from',
+    element.dataset.focus,
+    // 'inside',
+    // closestContainer.dataset.focus,
+    'to',
+    candidate.dataset.focus
+    // 'inside',
+    // container.dataset.focus
+  );
+
+  candidate.focus();
+
+  setActive(candidate);
 }
 
 function handleFocusOut(event) {
@@ -271,4 +278,6 @@ function handleFocusOut(event) {
 document.addEventListener('focusout', handleFocusOut);
 document.addEventListener('keydown', handleKeyDown);
 
-customElements.define('tv-series-page', SeriesPageElement);
+document.querySelector('[data-focusable]').focus();
+
+// customElements.define('tv-series-page', SeriesPageElement);
