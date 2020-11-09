@@ -37,6 +37,7 @@ function handleKeydownEvent(event) {
         activeManager.activeElementIndex += offset;
         activeManager.focusActiveElement();
       } else {
+        // Find nearest parent manager that can handle direction
         let target = activeManager.target;
 
         while ((target = target.parentElement)) {
@@ -45,6 +46,7 @@ function handleKeydownEvent(event) {
           if (
             manager &&
             manager.axis === axis &&
+            // Check if out of bounds
             manager.hasActiveElement(offset)
           ) {
             manager.activeElementIndex += offset;
@@ -60,6 +62,7 @@ function handleKeydownEvent(event) {
 export class FocusManager {
   /**
    * Constructor
+   *
    * @param { HTMLElement } target
    * @param { 'vertical' | 'horizontal' } [axis]
    * @param { string } [childSelector]
@@ -75,25 +78,44 @@ export class FocusManager {
 
     managersByTarget.set(this.target, this);
 
+    // Activate if current activeElement is the same as this target
     if (document.activeElement === this.target) {
       activeManager = this;
       this.focusActiveElement();
     }
   }
 
+  /**
+   * Return activeElement based on current focusable children and activeElementIndex
+   *
+   * @returns { HTMLElement | undefined }
+   */
   get activeElement() {
     const children = this.getFocusableChildren();
 
     return children[this.activeElementIndex];
   }
 
+  /**
+   * Determine if we have an activeElement candidate based on current activeElementIndex and an "offset"
+   *
+   * @param { number } offset
+   * @returns { boolean }
+   */
   hasActiveElement(offset) {
     const index = this.activeElementIndex + offset;
     const children = this.getFocusableChildren();
 
+    // TODO: allow for lazy loading/render
     return index >= 0 && index < children.length;
   }
 
+  /**
+   * Focus activeElement
+   * Passing a "relatedTarget" will override current activeElementIndex to account for spacial positioning
+   *
+   * @param { HTMLElement } [relatedTarget]
+   */
   focusActiveElement(relatedTarget) {
     if (this !== activeManager) {
       return;
@@ -104,6 +126,7 @@ export class FocusManager {
     if (activeElement) {
       const activeElementManager = managersByTarget.get(activeElement);
 
+      // If activeElement is also a FocusManager, activate and call focusActiveElement directly
       if (activeElementManager) {
         activeManager = activeElementManager;
         activeElementManager.focusActiveElement(relatedTarget);
@@ -138,6 +161,11 @@ export class FocusManager {
     }
   }
 
+  /**
+   * Retrieve target's children matching "childSelector"
+   *
+   * @returns { Array<HTMLElement> }
+   */
   getFocusableChildren() {
     return Array.from(this.target.children).filter((child) =>
       child.matches(this.childSelector)
