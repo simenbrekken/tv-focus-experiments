@@ -1,8 +1,37 @@
-<script type="module" src="./index.js"></script>
-<style>
-  tv-channel {
-    display: block;
-  }
-</style>
+<html>
+  <head>
+    <script type="module" src="./index.js"></script>
+    <style>
+      body {
+        font-family: sans-serif;
+      }
 
-<tv-live-page></tv-live-page>
+      [data-focus] {
+        display: flex;
+        flex-direction: row;
+        border: 1px solid blue;
+        padding: 5px;
+        margin: 10px;
+        background-color: rgba(0, 0, 255, 0.2);
+      }
+
+      [data-focus][data-orientation='vertical'] {
+        flex-direction: column;
+        border: 1px solid red;
+        background-color: rgba(255, 0, 0, 0.2);
+      }
+
+      :focus {
+        outline: 0;
+      }
+
+      :focus,
+      .focused {
+        background-color: yellow;
+      }
+    </style>
+  </head>
+  <body>
+    <tv-series-page></tv-series-page>
+  </body>
+</html>

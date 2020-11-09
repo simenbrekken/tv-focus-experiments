@@ -7,11 +7,11 @@
     "start": "dvlp www"
   },
   "devDependencies": {
-    "dvlp": "^11.0.0",
-    "lit-html": "^1.3.0"
+    "dvlp": "^11.0.0"
   },
   "dependencies": {
-    "@nrk/reactive-element": "^6.0.0"
+    "@nrk/reactive-element": "^6.0.0",
+    "lit-html": "^1.3.0"
   },
   "prettier": {
     "singleQuote": true
