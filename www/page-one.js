@@ -10,12 +10,7 @@ export class PageOne extends focusManagerMixin(ReactiveElement) {
   constructor() {
     super();
     this.focusAxis = 'vertical';
-  }
-
-  focusChildFilter() {
-    return Array.from(this.children).filter(
-      (child) => child.nodeName === 'PAGE-ONE-SECTION'
-    );
+    this.focusChildSelector = 'page-one-section';
   }
 
   updated() {
