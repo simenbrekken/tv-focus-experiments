@@ -55,10 +55,6 @@ function getOrientation(element) {
  * @returns {number}
  */
 function getActiveIndex(element) {
-  if (getBehavior(element) === 'first') {
-    return 0;
-  }
-
   return Number(element.dataset.activeIndex) || 0;
 }
 
@@ -67,10 +63,6 @@ function getActiveIndex(element) {
  * @param {number} activeIndex
  */
 function setActiveIndex(element, activeIndex) {
-  if (getBehavior(element) === 'static') {
-    return;
-  }
-
   element.dataset.activeIndex = activeIndex.toString();
 }
 
