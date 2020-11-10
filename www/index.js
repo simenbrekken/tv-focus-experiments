@@ -39,6 +39,13 @@ function getContainer(element) {
 /**
  * @param {HTMLElement} element
  */
+function getBehavior(element) {
+  return element.dataset.behavior;
+}
+
+/**
+ * @param {HTMLElement} element
+ */
 function getOrientation(element) {
   return element.dataset.orientation || 'horizontal';
 }
@@ -48,11 +55,23 @@ function getOrientation(element) {
  * @returns {number}
  */
 function getActiveIndex(element) {
-  if (element.dataset.activate === 'first') {
+  if (getBehavior(element) === 'first') {
     return 0;
   }
 
-  return Number(element.dataset.focusActiveIndex) || 0;
+  return Number(element.dataset.activeIndex) || 0;
+}
+
+/**
+ * @param {HTMLElement} element
+ * @param {number} activeIndex
+ */
+function setActiveIndex(element, activeIndex) {
+  if (getBehavior(element) === 'static') {
+    return;
+  }
+
+  element.dataset.activeIndex = activeIndex.toString();
 }
 
 /**
@@ -176,7 +195,7 @@ function setActive(element) {
   const children = Array.from(getChildren(container));
   const index = children.indexOf(element);
 
-  container.dataset.focusActiveIndex = index.toString();
+  setActiveIndex(container, index);
 
   return setActive(container);
 }
@@ -220,7 +239,7 @@ function findFocusable(source, direction) {
 
   const nextContainer = getNextChildInDirection(container, direction);
 
-  if (nextContainer.dataset.activate === 'closest') {
+  if (getBehavior(nextContainer) === 'closest') {
     let closestChild;
     let minDistance = Number.POSITIVE_INFINITY;
 
