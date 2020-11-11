@@ -2,6 +2,10 @@ body {
   font-family: sans-serif;
 }
 
+:focus {
+  outline: 0;
+}
+
 [data-focus] {
   display: flex;
   flex-direction: row;
@@ -17,11 +21,6 @@ body {
   background-color: rgba(255, 0, 0, 0.2);
 }
 
-:focus {
-  outline: 0;
-}
-
-:focus,
-.focused {
+[data-focused] {
   background-color: yellow;
 }

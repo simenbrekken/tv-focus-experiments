@@ -97,6 +97,25 @@ function getNextChildInDirection(element, direction) {
 }
 
 /**
+ *
+ * @param {HTMLElement} focusable
+ */
+function setFocused(focusable) {
+  /** @type {HTMLElement} */
+  const focused = document.querySelector('[data-focused]');
+
+  if (focused !== focusable) {
+    if (focused) {
+      delete focused.dataset.focused;
+    }
+
+    focusable.dataset.focused = '';
+  }
+
+  updateActiveIndex(focusable);
+}
+
+/**
  * Climb up the focus tree from the given element
  *
  * @param {HTMLElement} element
@@ -177,7 +196,7 @@ function dig(element, direction) {
  *
  * @param {HTMLElement} element
  */
-function setActive(element) {
+function updateActiveIndex(element) {
   const container = getContainer(element);
 
   if (!container) {
@@ -187,9 +206,11 @@ function setActive(element) {
   const children = Array.from(getChildren(container));
   const index = children.indexOf(element);
 
+  console.debug('Setting active index of', container.title, 'to', index);
+
   setActiveIndex(container, index);
 
-  return setActive(container);
+  return updateActiveIndex(container);
 }
 
 /**
@@ -221,6 +242,7 @@ function getDistance(a, b) {
  *
  * @param {HTMLElement} source
  * @param {string} direction
+ * @returns {HTMLElement}
  */
 function findFocusable(source, direction) {
   const container = climb(source, direction);
@@ -235,6 +257,7 @@ function findFocusable(source, direction) {
     let closestChild;
     let minDistance = Number.POSITIVE_INFINITY;
 
+    /** @type {NodeListOf<HTMLElement>} */
     const children = nextContainer.querySelectorAll('[data-focusable]');
 
     for (const child of children) {
@@ -253,38 +276,26 @@ function findFocusable(source, direction) {
 }
 
 function handleKeyDown(event) {
-  const element = event.target;
-
-  if (element.dataset.focus === undefined) {
-    return;
-  }
-
   const direction = directionByKey[event.key];
 
   if (!direction) {
     return;
   }
 
-  const focusable = findFocusable(element, direction);
+  /** @type {HTMLElement} */
+  const focused = document.querySelector('[data-focused]');
+  const focusable = findFocusable(focused, direction);
 
   if (focusable) {
-    focusable.focus();
+    setFocused(focusable);
   }
 }
 
 function handleFocusIn(event) {
-  setActive(event.target);
-}
-
-function handleFocusOut(event) {
-  if (event.relatedTarget === null) {
-    console.warn('Lost focus, recapturing!');
-    event.target.focus();
+  if (isFocusable(event.target)) {
+    setFocused(event.target);
   }
 }
 
 document.addEventListener('focusin', handleFocusIn);
-document.addEventListener('focusout', handleFocusOut);
 document.addEventListener('keydown', handleKeyDown);
-
-document.querySelector('[data-focusable]').focus();
