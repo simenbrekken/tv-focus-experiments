@@ -359,6 +359,20 @@ function findFocusable(source, direction) {
   return dig(nextContainer, direction);
 }
 
+/**
+ *
+ * @param {HTMLElement} focused
+ * @param {string} direction
+ * @returns {HTMLElement}
+ */
+function findFocusable2(focused, direction) {
+  // const section = focused.closest('[data-focus-section]');
+  const container = section.closest('[data-focus-container]');
+  const sections = container.querySelectorAll('[data-focus-section]');
+  const closest = get;
+  // const sections =
+}
+
 function handleKeyDown(event) {
   const direction = directionByKey[event.key];
 
@@ -368,7 +382,7 @@ function handleKeyDown(event) {
 
   /** @type {HTMLElement} */
   const focused = document.querySelector('[data-focused]');
-  const focusable = findFocusable(focused, direction);
+  const focusable = findFocusable2(focused, direction);
 
   if (focusable) {
     setFocused(focusable);
