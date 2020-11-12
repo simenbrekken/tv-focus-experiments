@@ -13,18 +13,10 @@ body {
   max-width: 700px;
   padding: 5px;
   margin: 10px;
-  /*
-  border: 1px solid blue;
-  background-color: rgba(0, 0, 255, 0.2);
-  */
 }
 
 [data-focus][data-orientation='vertical'] {
   flex-direction: column;
-  /*
-  border: 1px solid red;
-  background-color: rgba(255, 0, 0, 0.2);
-  */
 }
 
 [data-focus-container] {
