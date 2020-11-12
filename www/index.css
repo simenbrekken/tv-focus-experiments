@@ -9,6 +9,8 @@ body {
 [data-focus] {
   display: flex;
   flex-direction: row;
+  flex-grow: 1;
+  max-width: 700px;
   border: 1px solid blue;
   padding: 5px;
   margin: 10px;
