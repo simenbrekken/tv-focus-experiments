@@ -133,7 +133,7 @@ function setFocused(focusable) {
     focusable.dataset.focused = '';
   }
 
-  updateActiveIndex(focusable);
+  // updateActiveIndex(focusable);
 }
 
 /**
@@ -317,28 +317,55 @@ function getCenterPoint(rect) {
 }
 
 /**
- * @param {Element} a
- * @param {Element} b
+ * @param {DOMRect} rectA
+ * @param {DOMRect} rectB
  * @param {string} direction
  */
-function getDistanceInDirection(a, b, direction) {
-  const rectA = a.getBoundingClientRect();
-  const rectB = b.getBoundingClientRect();
+function getDistanceInDirection(rectA, rectB, direction) {
   const centerA = getCenterPoint(rectA);
   const centerB = getCenterPoint(rectB);
-
-  const kOrthogonalWeightForLeftRight = 30;
-  const kOrthogonalWeightForUpDown = 2;
+  const verticalOrthogonalWeight = 30;
+  const horizontalOrthogonalWeight = 2;
 
   switch (direction) {
     case 'up':
-      return Math.hypot(centerB.x - centerA.x, rectB.bottom - rectA.top);
+      return Math.hypot(
+        (centerB.x - centerA.x) * horizontalOrthogonalWeight,
+        rectB.bottom - rectA.top
+      );
     case 'down':
-      return Math.hypot(centerB.x - centerA.x, rectB.top - rectA.bottom);
+      return Math.hypot(
+        (centerB.x - centerA.x) * horizontalOrthogonalWeight,
+        rectB.top - rectA.bottom
+      );
     case 'left':
-      return Math.hypot(rectB.right - rectA.left, centerB.y - centerA.y);
+      return Math.hypot(
+        rectB.right - rectA.left,
+        (centerB.y - centerA.y) * verticalOrthogonalWeight
+      );
     case 'right':
-      return Math.hypot(rectB.left - rectA.right, centerB.y - centerA.y);
+      return Math.hypot(
+        rectB.left - rectA.right,
+        (centerB.y - centerA.y) * verticalOrthogonalWeight
+      );
+  }
+}
+/**
+ * @param {DOMRect} targetRect
+ * @param {DOMRect} sourceRect
+ * @param {string} direction
+ */
+
+function isValidForDirection(targetRect, sourceRect, direction) {
+  switch (direction) {
+    case 'up':
+      return targetRect.bottom < sourceRect.top;
+    case 'down':
+      return targetRect.top > sourceRect.bottom;
+    case 'left':
+      return targetRect.right < sourceRect.left;
+    case 'right':
+      return targetRect.left > sourceRect.right;
   }
 }
 
@@ -346,34 +373,38 @@ function getDistanceInDirection(a, b, direction) {
  * @param {HTMLElement} source
  * @param {Iterable<HTMLElement>} candidates
  * @param {string} direction
- * @param {HTMLElement} [container]
  * @returns {HTMLElement}
  */
-function getClosestInDirection(
-  source,
-  candidates,
-  direction,
-  container = source
-) {
+function getClosestInDirection(source, candidates, direction) {
+  const sourceRect = source.getBoundingClientRect();
+
   let closest;
   let minDistance = Number.POSITIVE_INFINITY;
 
-  for (const child of candidates) {
-    if (child !== container) {
-      const distance = getDistanceInDirection(source, child, direction);
+  for (const candidate of candidates) {
+    if (candidate !== source) {
+      const candidateRect = candidate.getBoundingClientRect();
 
-      console.debug(
-        'Distance from',
-        source.title,
-        'to',
-        child.title,
-        'is',
-        distance
-      );
+      if (isValidForDirection(candidateRect, sourceRect, direction)) {
+        const distance = getDistanceInDirection(
+          candidateRect,
+          sourceRect,
+          direction
+        );
 
-      if (distance < minDistance) {
-        minDistance = distance;
-        closest = child;
+        console.debug(
+          'Distance from',
+          source.title,
+          'to',
+          candidate.title,
+          'is',
+          distance
+        );
+
+        if (distance < minDistance) {
+          minDistance = distance;
+          closest = candidate;
+        }
       }
     }
   }
@@ -441,24 +472,34 @@ function findFocusable(source, direction) {
  */
 function findFocusable2(focused, direction) {
   /** @type {HTMLElement} */
-  const section = focused.closest('[data-focus-section]');
-  const container = section.closest('[data-focus-container]');
+  const container = focused.closest('[data-focus-container]');
 
-  /** @type {Iterable<HTMLElement>} */
-  const sections = container.querySelectorAll('[data-focus-section]');
-  console.debug('Finding closest section');
+  const focusedRect = focused.getBoundingClientRect();
 
-  const closestSection = getClosestInDirection(
-    focused,
-    sections,
+  /** @type {HTMLElement[]} */
+  const focusable = Array.from(container.querySelectorAll('[data-focusable]'));
+  const candidates = focusable.filter((candidate) => {
+    const rect = candidate.getBoundingClientRect();
+
+    switch (direction) {
+      case 'up':
+        return rect.bottom < focusedRect.top;
+      case 'down':
+        return rect.top > focusedRect.bottom;
+      case 'left':
+        return rect.right < focusedRect.left;
+      case 'right':
+        return rect.left > focusedRect.right;
+    }
+  });
+
+  console.debug(
+    'Finding focusable',
     direction,
-    section
+    'candidates',
+    candidates.map((candidate) => candidate.title).join(', ')
   );
 
-  /** @type {NodeListOf<HTMLElement>} */
-  const candidates = closestSection.querySelectorAll('[data-focusable]');
-
-  console.debug('Finding closest focusable');
   const next = getClosestInDirection(focused, candidates, direction);
 
   return next;
