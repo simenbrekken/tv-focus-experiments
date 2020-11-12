@@ -146,18 +146,19 @@ function handleKeyDown(event) {
     return;
   }
 
-  /** @type {HTMLElement} */
-  const focused = document.querySelector('[data-focused]');
+  document.querySelectorAll('[data-focused]').forEach((
+    /** @type {HTMLElement} */ focused
+  ) => {
+    /** @type {HTMLElement} */
+    const container = focused.closest('[data-focus-container]');
+    /** @type {NodeListOf<HTMLElement>} */
+    const candidates = container.querySelectorAll('[data-focusable]');
+    const focusable = getClosestInDirection(focused, candidates, direction);
 
-  /** @type {HTMLElement} */
-  const container = focused.closest('[data-focus-container]');
-  /** @type {NodeListOf<HTMLElement>} */
-  const candidates = container.querySelectorAll('[data-focusable]');
-  const focusable = getClosestInDirection(focused, candidates, direction);
-
-  if (focusable) {
-    setFocused(focusable);
-  }
+    if (focusable) {
+      setFocused(focusable);
+    }
+  });
 }
 
 function handleFocusIn(event) {
