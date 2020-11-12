@@ -87,7 +87,7 @@ function hasFocusableChildren(element) {
  * @param {string} direction
  * @returns {HTMLElement}
  */
-function getNextChildInDirection(element, direction) {
+function getNextChildInDirection(element, direction, action) {
   const children = getChildren(element);
   const activeIndex = getActiveIndex(element);
   const activeChild = children.item(activeIndex);
@@ -96,6 +96,7 @@ function getNextChildInDirection(element, direction) {
   if (nextChild) {
     console.debug(
       'Next child',
+      action,
       direction,
       'from',
       element.title,
@@ -105,6 +106,7 @@ function getNextChildInDirection(element, direction) {
   } else {
     console.debug(
       'Next child',
+      action,
       direction,
       'from',
       element.title,
@@ -183,7 +185,7 @@ function climb(element, direction) {
   const children = getChildren(element);
   const activeIndex = getActiveIndex(element);
   const activeChild = children.item(activeIndex);
-  const next = getNextChildInDirection(element, direction);
+  const next = getNextChildInDirection(element, direction, 'climb');
 
   if (next === activeChild) {
     console.debug(
@@ -218,7 +220,7 @@ function dig(element, direction) {
 
   if (!hasFocusableChildren(element)) {
     const container = getContainer(element);
-    const nextSibling = getNextChildInDirection(container, direction);
+    const nextSibling = getNextChildInDirection(container, direction, 'dig');
 
     // Prevent infinite loop
     if (nextSibling === element) {
@@ -318,7 +320,11 @@ function findFocusable(source, direction) {
     return;
   }
 
-  const nextContainer = getNextChildInDirection(container, direction);
+  const nextContainer = getNextChildInDirection(
+    container,
+    direction,
+    'findFocusable'
+  );
 
   if (getBehavior(nextContainer) === 'closest') {
     let closestChild;
