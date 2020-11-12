@@ -93,6 +93,25 @@ function getNextChildInDirection(element, direction) {
   const activeChild = children.item(activeIndex);
   const nextChild = children.item(activeIndex + offsetByDirection[direction]);
 
+  if (nextChild) {
+    console.debug(
+      'Next child',
+      direction,
+      'from',
+      element.title,
+      'is',
+      nextChild.title
+    );
+  } else {
+    console.debug(
+      'Next child',
+      direction,
+      'from',
+      element.title,
+      'does not exist'
+    );
+  }
+
   return nextChild || activeChild;
 }
 
@@ -129,11 +148,19 @@ function climb(element, direction) {
 
   // We're on a focusable leaf node so climb up
   if (isFocusable(element)) {
+    console.debug('Climbing from', element.title, 'that is not a container');
+
     return climb(getContainer(element), direction);
   }
 
   // If the node we're on contains no focusable children, climb up
   if (!hasFocusableChildren(element)) {
+    console.debug(
+      'Climbing from',
+      element.title,
+      'that contains no focusable children'
+    );
+
     return climb(getContainer(element), direction);
   }
 
@@ -141,6 +168,15 @@ function climb(element, direction) {
 
   // We have children, but the orientation doesn't match, so try our parent
   if (orientation !== orientationByDirection[direction]) {
+    console.debug(
+      'Climbing from',
+      element.title,
+      'that has orientation',
+      orientation,
+      'but we are going',
+      orientationByDirection[direction] + 'ly'
+    );
+
     return climb(getContainer(element), direction);
   }
 
@@ -150,8 +186,18 @@ function climb(element, direction) {
   const next = getNextChildInDirection(element, direction);
 
   if (next === activeChild) {
+    console.debug(
+      'Climbing from',
+      element.title,
+      'as the next focusable child',
+      next.title,
+      'is the same as the currently focused child'
+    );
+
     return climb(getContainer(element), direction);
   }
+
+  console.debug('Reached top', element.title);
 
   return element;
 }
@@ -165,6 +211,8 @@ function climb(element, direction) {
  */
 function dig(element, direction) {
   if (isFocusable(element)) {
+    console.debug('Stopping digging as', element.title, 'is focusable');
+
     return element;
   }
 
@@ -174,8 +222,21 @@ function dig(element, direction) {
 
     // Prevent infinite loop
     if (nextSibling === element) {
+      console.debug(
+        'Preventing infinite loop as next sibling is current element',
+        element.title
+      );
+
       return;
     }
+
+    console.debug(
+      'Digging from',
+      nextSibling.title,
+      'as',
+      element.title,
+      'has no focusable children'
+    );
 
     return dig(nextSibling, direction);
   }
@@ -185,8 +246,12 @@ function dig(element, direction) {
   const activeChild = children.item(activeIndex);
 
   if (!isFocusable(activeChild)) {
+    console.debug('Digging from', activeChild.title, 'that is not focusable');
+
     return dig(activeChild, direction);
   }
+
+  console.debug('Reached bottom', activeChild.title);
 
   return activeChild;
 }
@@ -248,6 +313,8 @@ function findFocusable(source, direction) {
   const container = climb(source, direction);
 
   if (!container) {
+    console.debug('No container found after climbing up, aborting');
+
     return;
   }
 
@@ -267,6 +334,17 @@ function findFocusable(source, direction) {
         minDistance = distance;
         closestChild = child;
       }
+    }
+
+    if (closestChild) {
+      console.debug(
+        'Found closest child',
+        closestChild.title,
+        'of',
+        nextContainer.title
+      );
+    } else {
+      console.debug('Could not find closest child of', nextContainer.title);
     }
 
     return closestChild;
