@@ -283,7 +283,7 @@ function updateActiveIndex(element) {
 /**
  * @param {Element} element
  */
-export function getCenterPoint(element) {
+export function getCenterPoint2(element) {
   const rect = element.getBoundingClientRect();
 
   return {
@@ -297,8 +297,8 @@ export function getCenterPoint(element) {
  * @param {Element} b
  */
 function getDistance(a, b) {
-  const centerA = getCenterPoint(a);
-  const centerB = getCenterPoint(b);
+  const centerA = getCenterPoint2(a);
+  const centerB = getCenterPoint2(b);
 
   return Math.sqrt(
     Math.pow(centerA.x - centerB.x, 2) + Math.pow(centerA.y - centerB.y, 2)
@@ -307,6 +307,81 @@ function getDistance(a, b) {
 
 /**
  *
+ * @param {DOMRect} rect
+ */
+function getCenterPoint(rect) {
+  return {
+    x: rect.left + rect.width / 2,
+    y: rect.top + rect.height / 2,
+  };
+}
+
+/**
+ * @param {Element} a
+ * @param {Element} b
+ * @param {string} direction
+ */
+function getDistanceInDirection(a, b, direction) {
+  const rectA = a.getBoundingClientRect();
+  const rectB = b.getBoundingClientRect();
+  const centerA = getCenterPoint(rectA);
+  const centerB = getCenterPoint(rectB);
+
+  const kOrthogonalWeightForLeftRight = 30;
+  const kOrthogonalWeightForUpDown = 2;
+
+  switch (direction) {
+    case 'up':
+      return Math.hypot(centerB.x - centerA.x, rectB.bottom - rectA.top);
+    case 'down':
+      return Math.hypot(centerB.x - centerA.x, rectB.top - rectA.bottom);
+    case 'left':
+      return Math.hypot(rectB.right - rectA.left, centerB.y - centerA.y);
+    case 'right':
+      return Math.hypot(rectB.left - rectA.right, centerB.y - centerA.y);
+  }
+}
+
+/**
+ * @param {HTMLElement} source
+ * @param {Iterable<HTMLElement>} candidates
+ * @param {string} direction
+ * @param {HTMLElement} [container]
+ * @returns {HTMLElement}
+ */
+function getClosestInDirection(
+  source,
+  candidates,
+  direction,
+  container = source
+) {
+  let closest;
+  let minDistance = Number.POSITIVE_INFINITY;
+
+  for (const child of candidates) {
+    if (child !== container) {
+      const distance = getDistanceInDirection(source, child, direction);
+
+      console.debug(
+        'Distance from',
+        source.title,
+        'to',
+        child.title,
+        'is',
+        distance
+      );
+
+      if (distance < minDistance) {
+        minDistance = distance;
+        closest = child;
+      }
+    }
+  }
+
+  return closest;
+}
+
+/**
  * @param {HTMLElement} source
  * @param {string} direction
  * @returns {HTMLElement}
@@ -360,16 +435,35 @@ function findFocusable(source, direction) {
 }
 
 /**
- *
  * @param {HTMLElement} focused
  * @param {string} direction
  * @returns {HTMLElement}
  */
 function findFocusable2(focused, direction) {
-  // const section = focused.closest('[data-focus-section]');
+  /** @type {HTMLElement} */
+  const section = focused.closest('[data-focus-section]');
   const container = section.closest('[data-focus-container]');
+
+  /** @type {Iterable<HTMLElement>} */
   const sections = container.querySelectorAll('[data-focus-section]');
-  const closest = get;
+  console.debug('Finding closest section');
+
+  const closestSection = getClosestInDirection(
+    focused,
+    sections,
+    direction,
+    section
+  );
+
+  /** @type {NodeListOf<HTMLElement>} */
+  const candidates = closestSection.querySelectorAll('[data-focusable]');
+
+  console.debug('Finding closest focusable');
+  const next = getClosestInDirection(focused, candidates, direction);
+
+  return next;
+
+  // const closest = get;
   // const sections =
 }
 
