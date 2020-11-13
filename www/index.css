@@ -34,12 +34,22 @@ button:not([disabled]) {
   background-color: rgba(0, 0, 255, 0.2);
 }
 
-a[data-focused] {
+a[data-focused],
+button[data-focused] {
   border: 1px solid rgba(255, 255, 0, 0.4);
   background-color: rgba(255, 255, 0, 0.2);
 }
 
-a:focus {
+a[data-active] {
+  font-weight: bold;
+}
+
+button[title] {
+  flex-grow: 0;
+}
+
+a:focus,
+button:focus {
   outline: 0;
   border: 1px solid rgba(255, 0, 0, 0.4);
   background-color: rgba(255, 0, 0, 0.2);
@@ -49,8 +59,6 @@ a:focus {
   display: flex;
   flex-direction: row;
   max-width: 700px;
-  border: 1px solid rgba(0, 255, 0, 0.4);
-  background-color: rgba(0, 255, 0, 0.2);
 }
 
 .flex::after {
@@ -71,4 +79,12 @@ a:focus {
   content: attr(title);
   margin-right: 10px;
   margin-top: 5px;
+}
+
+.episode {
+  width: 30%;
+}
+
+.plug {
+  height: 150px;
 }

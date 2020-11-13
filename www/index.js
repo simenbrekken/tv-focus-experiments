@@ -191,7 +191,9 @@ function handleClick(event) {
     const container = getSpatialNavigationContainer(event.target);
     const focused = getFocused(container);
 
-    focused.focus();
+    if (focused) {
+      focused.focus();
+    }
   }
 }
 
