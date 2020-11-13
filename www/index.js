@@ -1,6 +1,8 @@
 // @ts-check
 const verticalOrthogonalWeight = 30;
 const horizontalOrthogonalWeight = 2;
+const activeWeight = 100;
+
 const containerSelector = '[data-spatial-navigation-contain]';
 const focusableSelector = '[tabindex], a[href], button:not([disabled])';
 
@@ -81,12 +83,12 @@ function getDistanceInDirection(rectA, rectB, direction) {
   switch (direction) {
     case 'up':
       return Math.hypot(
-        (centerB.x - centerA.x) * horizontalOrthogonalWeight,
+        (rectB.x - rectA.x) * horizontalOrthogonalWeight,
         rectB.bottom - rectA.top
       );
     case 'down':
       return Math.hypot(
-        (centerB.x - centerA.x) * horizontalOrthogonalWeight,
+        (rectB.x - rectA.x) * horizontalOrthogonalWeight,
         rectB.top - rectA.bottom
       );
     case 'left':
@@ -137,11 +139,15 @@ function getClosestInDirection(source, candidates, direction) {
       const candidateRect = candidate.getBoundingClientRect();
 
       if (isValidForDirection(candidateRect, sourceRect, direction)) {
-        const distance = getDistanceInDirection(
+        let distance = getDistanceInDirection(
           candidateRect,
           sourceRect,
           direction
         );
+
+        if (candidate.dataset.active !== undefined) {
+          distance /= activeWeight;
+        }
 
         console.debug(
           'Distance from',
