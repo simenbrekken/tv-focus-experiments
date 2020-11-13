@@ -6,91 +6,74 @@
   <body>
     <h1>Front page</h1>
     <div
-      data-focus
-      data-focus-container
+      data-spatial-navigation-contain
       title="front-page"
-      data-orientation="vertical"
+      class="flex flex-col"
     >
-      <div data-focus data-focus-section title="menu">
-        <div data-focus title="home" data-focusable tabindex="0"></div>
-        <div data-focus title="live" data-focusable tabindex="0"></div>
-        <div data-focus title="search" data-focusable tabindex="0"></div>
+      <div title="menu" class="flex">
+        <a title="home" href="#home"></a>
+        <a title="live" href="#live"></a>
+        <a title="search" href="#search"></a>
       </div>
-      <div
-        data-focus
-        title="sections"
-        data-focus-section
-        data-orientation="vertical"
-      >
-        <div data-focus data-focus-section title="section-1">
-          <div data-focus title="plug-1" data-focusable tabindex="0"></div>
-          <div data-focus title="plug-2" data-focusable tabindex="0"></div>
-          <div data-focus title="plug-3" data-focusable tabindex="0"></div>
+      <div title="sections" class="flex flex-col">
+        <div class="flex">
+          <a title="plug-1" href="#plug-1"></a>
+          <a title="plug-2" href="#plug-2"></a>
+          <a title="plug-3" href="#plug-3"></a>
         </div>
-        <div data-focus data-focus-section title="section-2">
-          <div data-focus title="plug-4" data-focusable tabindex="0"></div>
-          <div data-focus title="plug-5" data-focusable tabindex="0"></div>
-          <div data-focus title="plug-6" data-focusable tabindex="0"></div>
+        <div class="flex">
+          <a title="plug-4" href="#plug-4"></a>
+          <a title="plug-5" href="#plug-5"></a>
+          <a title="plug-6" href="#plug-6"></a>
         </div>
       </div>
     </div>
 
     <h1>Search page</h1>
     <div
-      data-focus
-      data-focus-container
+      data-spatial-navigation-contain
       title="search-page"
-      data-orientation="vertical"
+      class="flex flex-col"
     >
-      <div data-focus data-focus-section title="menu">
-        <div data-focus title="home" data-focusable tabindex="0"></div>
-        <div data-focus title="live" data-focusable tabindex="0"></div>
-        <div data-focus title="search" data-focusable tabindex="0"></div>
+      <div title="menu" class="flex">
+        <a title="home" href="#home"></a>
+        <a title="live" href="#live"></a>
+        <a title="search" href="#search"></a>
       </div>
-      <div data-focus title="search" data-focus-section>
-        <div
-          data-focus
-          title="keyboard"
-          data-focus-section
-          data-orientation="vertical"
-        >
-          <div data-focus title="keyboard-row-1" data-focus-section>
-            <div data-focus title="space" data-focusable tabindex="0"></div>
-            <div data-focus title="delete" data-focusable tabindex="0"></div>
-            <div data-focus title="numeric" data-focusable tabindex="0"></div>
+      <div class="flex">
+        <div title="keyboard" class="flex flex-col">
+          <div class="flex">
+            <a title="space" href="#space"></a>
+            <a title="delete" href="#delete"></a>
+            <a title="numeric" href="#numeric"></a>
           </div>
-          <div data-focus title="keyboard-row-2" data-focus-section>
-            <div data-focus title="a" data-focusable tabindex="0"></div>
-            <div data-focus title="b" data-focusable tabindex="0"></div>
-            <div data-focus title="c" data-focusable tabindex="0"></div>
-            <div data-focus title="d" data-focusable tabindex="0"></div>
-            <div data-focus title="e" data-focusable tabindex="0"></div>
-            <div data-focus title="f" data-focusable tabindex="0"></div>
+          <div class="flex">
+            <a title="a" href="#a"></a>
+            <a title="b" href="#b"></a>
+            <a title="c" href="#c"></a>
+            <a title="d" href="#d"></a>
+            <a title="e" href="#e"></a>
+            <a title="f" href="#f"></a>
           </div>
-          <div data-focus title="keyboard-row-3" data-focus-section>
-            <div data-focus title="g" data-focusable tabindex="0"></div>
-            <div data-focus title="h" data-focusable tabindex="0"></div>
-            <div data-focus title="i" data-focusable tabindex="0"></div>
-            <div data-focus title="j" data-focusable tabindex="0"></div>
-            <div data-focus title="k" data-focusable tabindex="0"></div>
-            <div data-focus title="l" data-focusable tabindex="0"></div>
+          <div class="flex">
+            <a title="g" href="#g"></a>
+            <a title="h" href="#h"></a>
+            <a title="i" href="#i"></a>
+            <a title="j" href="#j"></a>
+            <a title="k" href="#k"></a>
+            <a title="l" href="#l"></a>
           </div>
         </div>
-        <div
-          data-focus
-          title="results"
-          data-focus-section
-          data-orientation="vertical"
-        >
-          <div data-focus title="results-row-1" data-focus-section>
-            <div data-focus title="plug-1" data-focusable tabindex="0"></div>
-            <div data-focus title="plug-2" data-focusable tabindex="0"></div>
-            <div data-focus title="plug-3" data-focusable tabindex="0"></div>
+        <div title="results" class="flex flex-col">
+          <div class="flex">
+            <a title="plug-1" href="#plug-1"></a>
+            <a title="plug-2" href="#plug-2"></a>
+            <a title="plug-3" href="#plug-3"></a>
           </div>
-          <div data-focus title="results-row-2" data-focus-section>
-            <div data-focus title="plug-4" data-focusable tabindex="0"></div>
-            <div data-focus title="plug-5" data-focusable tabindex="0"></div>
-            <div data-focus title="plug-6" data-focusable tabindex="0"></div>
+          <div class="flex">
+            <a title="plug-4" href="#plug-4"></a>
+            <a title="plug-5" href="#plug-5"></a>
+            <a title="plug-6" href="#plug-6"></a>
           </div>
         </div>
       </div>

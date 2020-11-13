@@ -1,6 +1,8 @@
 // @ts-check
 const verticalOrthogonalWeight = 30;
 const horizontalOrthogonalWeight = 2;
+const containerSelector = '[data-spatial-navigation-contain]';
+const focusableSelector = '[tabindex], a[href], button:not([disabled])';
 
 const directionByKey = {
   ArrowDown: 'down',
@@ -13,18 +15,39 @@ const directionByKey = {
  * @param {HTMLElement} element
  */
 function isFocusable(element) {
-  return element.dataset.focusable !== undefined;
+  return element.matches(focusableSelector);
+}
+
+/**
+ * @param {HTMLElement} element
+ * @returns {HTMLElement}
+ */
+function getSpatialNavigationContainer(element) {
+  return element.closest(containerSelector);
+}
+
+/**
+ * @param {HTMLElement} container
+ * @returns {NodeListOf<HTMLElement>}
+ */
+function getSpatialNavigationCandidates(container) {
+  return container.querySelectorAll(focusableSelector);
+}
+
+/**
+ * @param {HTMLElement} container
+ * @returns {HTMLElement}
+ */
+function getFocused(container) {
+  return container.querySelector('[data-focused]');
 }
 
 /**
  * @param {HTMLElement} focusable
  */
 function setFocused(focusable) {
-  /** @type {HTMLElement} */
-  const container = focusable.closest('[data-focus-container]');
-
-  /** @type {HTMLElement} */
-  const focused = container.querySelector('[data-focused]');
+  const container = getSpatialNavigationContainer(focusable);
+  const focused = getFocused(container);
 
   if (focused !== focusable) {
     if (focused) {
@@ -32,6 +55,7 @@ function setFocused(focusable) {
     }
 
     focusable.dataset.focused = '';
+    focusable.focus();
   }
 }
 
@@ -146,19 +170,14 @@ function handleKeyDown(event) {
     return;
   }
 
-  document.querySelectorAll('[data-focused]').forEach((
-    /** @type {HTMLElement} */ focused
-  ) => {
-    /** @type {HTMLElement} */
-    const container = focused.closest('[data-focus-container]');
-    /** @type {NodeListOf<HTMLElement>} */
-    const candidates = container.querySelectorAll('[data-focusable]');
-    const focusable = getClosestInDirection(focused, candidates, direction);
+  const focused = /** @type {HTMLElement} */ (document.activeElement);
+  const container = getSpatialNavigationContainer(focused);
+  const candidates = getSpatialNavigationCandidates(container);
+  const focusable = getClosestInDirection(focused, candidates, direction);
 
-    if (focusable) {
-      setFocused(focusable);
-    }
-  });
+  if (focusable) {
+    setFocused(focusable);
+  }
 }
 
 function handleFocusIn(event) {
@@ -167,5 +186,15 @@ function handleFocusIn(event) {
   }
 }
 
+function handleClick(event) {
+  if (!isFocusable(event.target)) {
+    const container = getSpatialNavigationContainer(event.target);
+    const focused = getFocused(container);
+
+    focused.focus();
+  }
+}
+
+document.addEventListener('click', handleClick);
 document.addEventListener('focusin', handleFocusIn);
 document.addEventListener('keydown', handleKeyDown);
