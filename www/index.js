@@ -1,8 +1,4 @@
 // @ts-check
-const verticalOrthogonalWeight = 30;
-const horizontalOrthogonalWeight = 2;
-const activeWeight = 100;
-
 const containerSelector = '[data-spatial-navigation-contain]';
 const focusableSelector = '[tabindex], a[href], button:not([disabled])';
 
@@ -62,13 +58,37 @@ function setFocused(focusable) {
 }
 
 /**
- * @param {DOMRect} rect
+ * @param {DOMRect} rectA
+ * @param {DOMRect} rectB
+ * @param {string} direction
  */
-function getCenterPoint(rect) {
-  return {
-    x: rect.left + rect.width / 2,
-    y: rect.top + rect.height / 2,
-  };
+function getSpatialPlanesForDirection(rectA, rectB, direction) {
+  switch (direction) {
+    case 'up':
+      return {
+        s1: [rectA.left, rectA.right],
+        s2: [rectB.left, rectB.right],
+        d: rectA.top - rectB.bottom,
+      };
+    case 'down':
+      return {
+        s1: [rectA.left, rectA.right],
+        s2: [rectB.left, rectB.right],
+        d: rectB.top - rectA.bottom,
+      };
+    case 'left':
+      return {
+        s1: [rectA.top, rectA.bottom],
+        s2: [rectB.top, rectB.bottom],
+        d: rectA.left - rectB.right,
+      };
+    case 'right':
+      return {
+        s1: [rectA.top, rectA.bottom],
+        s2: [rectB.top, rectB.bottom],
+        d: rectB.left - rectA.right,
+      };
+  }
 }
 
 /**
@@ -77,39 +97,29 @@ function getCenterPoint(rect) {
  * @param {string} direction
  */
 function getDistanceInDirection(rectA, rectB, direction) {
-  const centerA = getCenterPoint(rectA);
-  const centerB = getCenterPoint(rectB);
+  const { s1, s2, d } = getSpatialPlanesForDirection(rectA, rectB, direction);
+  const isOverlaping =
+    (s1[0] >= s2[0] && s1[0] <= s2[1]) || (s1[1] >= s2[0] && s1[1] <= s2[1]);
 
-  switch (direction) {
-    case 'up':
-      return Math.hypot(
-        (rectB.x - rectA.x) * horizontalOrthogonalWeight,
-        rectB.bottom - rectA.top
-      );
-    case 'down':
-      return Math.hypot(
-        (rectB.x - rectA.x) * horizontalOrthogonalWeight,
-        rectB.top - rectA.bottom
-      );
-    case 'left':
-      return Math.hypot(
-        rectB.right - rectA.left,
-        (centerB.y - centerA.y) * verticalOrthogonalWeight
-      );
-    case 'right':
-      return Math.hypot(
-        rectB.left - rectA.right,
-        (centerB.y - centerA.y) * verticalOrthogonalWeight
-      );
+  // If segments are overlapping, shortest distance is length of tangent (d)
+  if (isOverlaping) {
+    return d;
+  }
+
+  // If A is right of B, measure distance between left-most A point and right-most B point
+  if (s1[0] > s2[1]) {
+    return Math.hypot(s1[0] - s2[1], d);
+  } else {
+    return Math.hypot(s1[1] - s2[0], d);
   }
 }
 
 /**
- * @param {DOMRect} targetRect
  * @param {DOMRect} sourceRect
+ * @param {DOMRect} targetRect
  * @param {string} direction
  */
-function isValidForDirection(targetRect, sourceRect, direction) {
+function isValidForDirection(sourceRect, targetRect, direction) {
   switch (direction) {
     case 'up':
       return targetRect.bottom < sourceRect.top;
@@ -138,16 +148,12 @@ function getClosestInDirection(source, candidates, direction) {
     if (candidate !== source) {
       const candidateRect = candidate.getBoundingClientRect();
 
-      if (isValidForDirection(candidateRect, sourceRect, direction)) {
+      if (isValidForDirection(sourceRect, candidateRect, direction)) {
         let distance = getDistanceInDirection(
-          candidateRect,
           sourceRect,
+          candidateRect,
           direction
         );
-
-        if (candidate.dataset.active !== undefined) {
-          distance /= activeWeight;
-        }
 
         console.debug(
           'Distance from',
