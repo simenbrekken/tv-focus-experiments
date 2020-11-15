@@ -1,86 +1,198 @@
-import { ReactiveElement } from '../node_modules/@nrk/reactive-element/index.mjs';
-import { html, render } from '../node_modules/lit-html/lit-html.js';
+const activeSelector = '[data-active]';
+const containerSelector = '[data-container]';
+const focusableSelector = '[data-focusable]';
 
-class ChannelElement extends ReactiveElement {
-  static get reactiveProperties() {
-    return {
-      channel: Object,
-    };
-  }
+const verticalOrthogonalWeight = 30;
+const horizontalOrthogonalWeight = 2;
 
-  updated() {
-    render(this.render(), this);
+const directionByKey = {
+  ArrowDown: 'down',
+  ArrowLeft: 'left',
+  ArrowRight: 'right',
+  ArrowUp: 'up',
+};
 
-    console.log(
-      `ChannelsListElement ${this.channel.id} .channel count: ${
-        this.querySelectorAll('.channel').length
-      }`
-    );
-  }
+function getCenterPoint(rect) {
+  return {
+    x: rect.left + rect.width / 2,
+    y: rect.top + rect.height / 2,
+  };
+}
 
-  render() {
-    return html`<div class="channel">${this.channel.name}</div>`;
+function getDistanceInDirection(rectA, rectB, direction) {
+  const centerA = getCenterPoint(rectA);
+  const centerB = getCenterPoint(rectB);
+
+  switch (direction) {
+    case 'up':
+      return Math.hypot(
+        (centerB.x - centerA.x) * horizontalOrthogonalWeight,
+        rectB.bottom - rectA.top
+      );
+    case 'down':
+      return Math.hypot(
+        (centerB.x - centerA.x) * horizontalOrthogonalWeight,
+        rectB.top - rectA.bottom
+      );
+    case 'left':
+      return Math.hypot(
+        rectB.right - rectA.left,
+        (centerB.y - centerA.y) * verticalOrthogonalWeight
+      );
+    case 'right':
+      return Math.hypot(
+        rectB.left - rectA.right,
+        (centerB.y - centerA.y) * verticalOrthogonalWeight
+      );
   }
 }
 
-class ChannelsListElement extends ReactiveElement {
-  static get reactiveProperties() {
-    return {
-      channels: Object,
-    };
-  }
-
-  async updated() {
-    render(this.render(), this);
-
-    await Promise.resolve();
-
-    console.log(
-      `ChannelsListElement .channel count: ${
-        this.querySelectorAll('.channel').length
-      }`
-    );
-  }
-
-  render() {
-    return html`<div>
-      <h2>Channel list</h2>
-      <tv-scroll-container>
-        ${this.channels.map(
-          (channel) => html`<tv-channel .channel="${channel}"></tv-channel>`
-        )}
-      </tv-scroll-container>
-    </div>`;
+function isValidForDirection(targetRect, sourceRect, direction) {
+  switch (direction) {
+    case 'up':
+      return targetRect.bottom <= sourceRect.top;
+    case 'down':
+      return targetRect.top >= sourceRect.bottom;
+    case 'left':
+      return targetRect.right <= sourceRect.left;
+    case 'right':
+      return targetRect.left >= sourceRect.right;
   }
 }
 
-class LivePageElement extends ReactiveElement {
-  async updated() {
-    render(this.render(), this);
+function getClosestCandidate(searchOrigin, candidates, direction) {
+  const sourceRect = searchOrigin.getBoundingClientRect();
 
-    await Promise.resolve();
+  let closestCandidate;
+  let minDistance = Number.POSITIVE_INFINITY;
 
-    console.log(
-      `LivePageElement .channel count: ${
-        this.querySelectorAll('.channel').length
-      }`
-    );
+  for (const candidate of candidates) {
+    if (candidate !== searchOrigin) {
+      const candidateRect = candidate.getBoundingClientRect();
+
+      if (isValidForDirection(candidateRect, sourceRect, direction)) {
+        let distance = getDistanceInDirection(
+          candidateRect,
+          sourceRect,
+          direction
+        );
+
+        console.debug(
+          'Distance from',
+          searchOrigin.title,
+          'to',
+          candidate.title,
+          'going',
+          direction,
+          'is',
+          distance
+        );
+
+        if (distance < minDistance) {
+          minDistance = distance;
+          closestCandidate = candidate;
+        }
+      }
+    }
   }
 
-  render() {
-    const channels = [
-      { id: 'nrk1', name: 'NRK1' },
-      { id: 'nrk2', name: 'NRK2' },
-      { id: 'nrk3', name: 'NRK3' },
-    ];
+  return closestCandidate;
+}
 
-    return html`<div>
-      <h1>Live page</h1>
-      <tv-channels-list .channels=${channels}></tv-channels-list>
-    </div>`;
+function findFocusable(container, searchOrigin, direction, preferActive) {
+  const candidates = Array.from(container.querySelectorAll(focusableSelector));
+  const candidatesExcludingSearchOrigin = candidates.filter(
+    (candidate) => candidate !== searchOrigin
+  );
+
+  const searchOriginRect = searchOrigin.getBoundingClientRect();
+
+  const candidatesExcludingSourceOriginAndInvalidForDirection = candidatesExcludingSearchOrigin.filter(
+    (candidate) =>
+      isValidForDirection(
+        candidate.getBoundingClientRect(),
+        searchOriginRect,
+        direction
+      )
+  );
+
+  if (candidatesExcludingSourceOriginAndInvalidForDirection.length == 0) {
+    const closestContainerFromParent = container.parentElement.closest(
+      containerSelector
+    );
+    const containers = Array.from(
+      closestContainerFromParent.querySelectorAll(containerSelector)
+    );
+
+    const containersExcludingCurrentContainer = containers.filter(
+      (candidate) => candidate !== container
+    );
+
+    const containerRect = container.getBoundingClientRect();
+
+    const containersExcludingCurrentContainerAndInvalidForDirection = containersExcludingCurrentContainer.filter(
+      (candidate) =>
+        isValidForDirection(
+          candidate.getBoundingClientRect(),
+          containerRect,
+          direction
+        )
+    );
+
+    const closestContainer = getClosestCandidate(
+      searchOrigin,
+      containersExcludingCurrentContainerAndInvalidForDirection,
+      direction,
+      true
+    );
+
+    if (!closestContainer) {
+      return;
+    }
+
+    return findFocusable(closestContainer, searchOrigin, direction, true);
+  } else if (
+    candidatesExcludingSourceOriginAndInvalidForDirection.length === 1
+  ) {
+    return candidatesExcludingSourceOriginAndInvalidForDirection[0];
+  }
+
+  if (preferActive) {
+    const activeCandidate = candidatesExcludingSourceOriginAndInvalidForDirection.find(
+      (candidate) => candidate.matches(activeSelector)
+    );
+
+    if (activeCandidate) {
+      return activeCandidate;
+    }
+  }
+
+  return getClosestCandidate(
+    searchOrigin,
+    candidatesExcludingSourceOriginAndInvalidForDirection,
+    direction
+  );
+}
+
+function handleKeyDown(event) {
+  const direction = directionByKey[event.key];
+
+  if (!direction) {
+    return;
+  }
+
+  const searchOrigin = event.target;
+  const container = searchOrigin.closest(containerSelector);
+
+  if (!container) {
+    return;
+  }
+
+  const focusable = findFocusable(container, searchOrigin, direction);
+
+  if (focusable) {
+    focusable.focus();
   }
 }
 
-customElements.define('tv-live-page', LivePageElement);
-customElements.define('tv-channels-list', ChannelsListElement);
-customElements.define('tv-channel', ChannelElement);
+document.addEventListener('keydown', handleKeyDown);

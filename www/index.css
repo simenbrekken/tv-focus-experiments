@@ -1,0 +1,22 @@
+[data-container] {
+  border: 1px solid rgba(0, 255, 0, 0.4);
+  background-color: rgba(0, 255, 0, 0.2);
+}
+
+[data-focusable] {
+  padding: 5px;
+  margin: 10px;
+  border: 1px solid rgba(0, 0, 255, 0.4);
+  background-color: rgba(0, 0, 255, 0.2);
+}
+
+[data-active] {
+  font-weight: bold;
+}
+
+:focus {
+  outline: 0;
+  border: 1px solid rgba(255, 0, 0, 0.4);
+  border: 1px solid rgba(255, 0, 0, 0.4);
+  background-color: rgba(255, 0, 0, 0.2);
+}
