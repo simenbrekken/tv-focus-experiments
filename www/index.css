@@ -1,9 +1,11 @@
-[data-container] {
+[data-spatial-navigation-contain] {
   border: 1px solid rgba(0, 255, 0, 0.4);
   background-color: rgba(0, 255, 0, 0.2);
 }
 
-[data-focusable] {
+[tabindex],
+a[href],
+button:not([disabled]) {
   padding: 5px;
   margin: 10px;
   border: 1px solid rgba(0, 0, 255, 0.4);
@@ -14,7 +16,9 @@
   font-weight: bold;
 }
 
-:focus {
+[tabindex]:focus,
+a[href]:focus,
+button:not([disabled]):focus {
   outline: 0;
   border: 1px solid rgba(255, 0, 0, 0.4);
   border: 1px solid rgba(255, 0, 0, 0.4);
