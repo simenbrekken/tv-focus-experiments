@@ -2,9 +2,6 @@ const activeSelector = '[data-active]';
 const containerSelector = '[data-container]';
 const focusableSelector = '[data-focusable]';
 
-const verticalOrthogonalWeight = 30;
-const horizontalOrthogonalWeight = 2;
-
 const directionByKey = {
   ArrowDown: 'down',
   ArrowLeft: 'left',
@@ -12,42 +9,69 @@ const directionByKey = {
   ArrowUp: 'up',
 };
 
-function getCenterPoint(rect) {
-  return {
-    x: rect.left + rect.width / 2,
-    y: rect.top + rect.height / 2,
-  };
-}
-
-function getDistanceInDirection(rectA, rectB, direction) {
-  const centerA = getCenterPoint(rectA);
-  const centerB = getCenterPoint(rectB);
-
+/**
+ * @param {DOMRect} rectA
+ * @param {DOMRect} rectB
+ * @param {string} direction
+ */
+function getSpatialPlanesForDirection(rectA, rectB, direction) {
   switch (direction) {
     case 'up':
-      return Math.hypot(
-        (centerB.x - centerA.x) * horizontalOrthogonalWeight,
-        rectB.bottom - rectA.top
-      );
+      return {
+        s1: [rectA.left, rectA.right],
+        s2: [rectB.left, rectB.right],
+        d: rectA.top - rectB.bottom,
+      };
     case 'down':
-      return Math.hypot(
-        (centerB.x - centerA.x) * horizontalOrthogonalWeight,
-        rectB.top - rectA.bottom
-      );
+      return {
+        s1: [rectA.left, rectA.right],
+        s2: [rectB.left, rectB.right],
+        d: rectB.top - rectA.bottom,
+      };
     case 'left':
-      return Math.hypot(
-        rectB.right - rectA.left,
-        (centerB.y - centerA.y) * verticalOrthogonalWeight
-      );
+      return {
+        s1: [rectA.top, rectA.bottom],
+        s2: [rectB.top, rectB.bottom],
+        d: rectA.left - rectB.right,
+      };
     case 'right':
-      return Math.hypot(
-        rectB.left - rectA.right,
-        (centerB.y - centerA.y) * verticalOrthogonalWeight
-      );
+      return {
+        s1: [rectA.top, rectA.bottom],
+        s2: [rectB.top, rectB.bottom],
+        d: rectB.left - rectA.right,
+      };
   }
 }
 
-function isValidForDirection(targetRect, sourceRect, direction) {
+/**
+ * @param {DOMRect} rectA
+ * @param {DOMRect} rectB
+ * @param {string} direction
+ */
+function getDistanceInDirection(rectA, rectB, direction) {
+  const { s1, s2, d } = getSpatialPlanesForDirection(rectA, rectB, direction);
+  const isOverlaping =
+    (s1[0] >= s2[0] && s1[0] <= s2[1]) || (s1[1] >= s2[0] && s1[1] <= s2[1]);
+
+  // If segments are overlapping, shortest distance is length of tangent (d)
+  if (isOverlaping) {
+    return d;
+  }
+
+  // If A is right of B, measure distance between left-most A point and right-most B point
+  if (s1[0] > s2[1]) {
+    return Math.hypot(s1[0] - s2[1], d);
+  } else {
+    return Math.hypot(s1[1] - s2[0], d);
+  }
+}
+
+/**
+ * @param {DOMRect} sourceRect
+ * @param {DOMRect} targetRect
+ * @param {string} direction
+ */
+function isValidForDirection(sourceRect, targetRect, direction) {
   switch (direction) {
     case 'up':
       return targetRect.bottom <= sourceRect.top;
@@ -70,10 +94,10 @@ function getClosestCandidate(searchOrigin, candidates, direction) {
     if (candidate !== searchOrigin) {
       const candidateRect = candidate.getBoundingClientRect();
 
-      if (isValidForDirection(candidateRect, sourceRect, direction)) {
+      if (isValidForDirection(sourceRect, candidateRect, direction)) {
         let distance = getDistanceInDirection(
-          candidateRect,
           sourceRect,
+          candidateRect,
           direction
         );
 
@@ -110,8 +134,8 @@ function findFocusable(container, searchOrigin, direction, preferActive) {
   const candidatesExcludingSourceOriginAndInvalidForDirection = candidatesExcludingSearchOrigin.filter(
     (candidate) =>
       isValidForDirection(
-        candidate.getBoundingClientRect(),
         searchOriginRect,
+        candidate.getBoundingClientRect(),
         direction
       )
   );
@@ -133,8 +157,8 @@ function findFocusable(container, searchOrigin, direction, preferActive) {
     const containersExcludingCurrentContainerAndInvalidForDirection = containersExcludingCurrentContainer.filter(
       (candidate) =>
         isValidForDirection(
-          candidate.getBoundingClientRect(),
           containerRect,
+          candidate.getBoundingClientRect(),
           direction
         )
     );
