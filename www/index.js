@@ -9,7 +9,21 @@ const DIRECTION_BY_KEY = {
   ArrowUp: 'up',
 };
 
+document.addEventListener('click', handleClick);
 document.addEventListener('keydown', handleKeyDown);
+
+/**
+ * @param {MouseEvent} event
+ */
+function handleClick(event) {
+  const searchOrigin = /** @type {HTMLElement}*/ (event.target);
+
+  if (searchOrigin.matches(FOCUSABLE_SELECTOR)) {
+    event.preventDefault();
+
+    searchOrigin.focus();
+  }
+}
 
 /**
  * @param {KeyboardEvent} event
