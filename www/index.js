@@ -90,7 +90,7 @@ function findFocusable(container, searchOrigin, direction, preferActive) {
  * @returns {HTMLElement}
  */
 function getClosestCandidate(candidates, searchOrigin, direction) {
-  const sourceRect = searchOrigin.getBoundingClientRect();
+  const searchOriginRect = searchOrigin.getBoundingClientRect();
 
   let closestCandidate;
   let minDistance = Number.POSITIVE_INFINITY;
@@ -100,7 +100,7 @@ function getClosestCandidate(candidates, searchOrigin, direction) {
       const candidateRect = candidate.getBoundingClientRect();
 
       let distance = getDistanceInDirection(
-        sourceRect,
+        searchOriginRect,
         candidateRect,
         direction
       );
