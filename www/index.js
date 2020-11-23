@@ -99,7 +99,7 @@ function findFocusable(container, searchOrigin, direction, candidateSelector) {
       closestContainer,
       searchOrigin,
       direction,
-      closestContainer.dataset.enterSelector // When switching containers
+      closestContainer.dataset.spatialNavigationEnterSelector // When switching containers attempt to use enter selector
     );
   } else if (
     candidatesExcludingSourceOriginAndInvalidForDirection.length === 1
