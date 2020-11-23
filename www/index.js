@@ -10,7 +10,18 @@ const DIRECTION_BY_KEY = {
 };
 
 document.addEventListener('click', handleClick);
+document.addEventListener('focusin', handleFocusIn);
 document.addEventListener('keydown', handleKeyDown);
+
+function handleFocusIn(event) {
+  const subtitlesMenu = /** @type {HTMLElement}*/ (document.querySelector(
+    '[data-subtitles-menu]'
+  ));
+
+  if (subtitlesMenu) {
+    subtitlesMenu.hidden = event.target.closest('[data-subtitles]') === null;
+  }
+}
 
 /**
  * @param {MouseEvent} event
@@ -29,6 +40,8 @@ function handleClick(event) {
  * @param {KeyboardEvent} event
  */
 function handleKeyDown(event) {
+  event.preventDefault();
+
   const direction = DIRECTION_BY_KEY[event.key];
 
   if (!direction) {
@@ -55,9 +68,9 @@ function handleKeyDown(event) {
  * @param {HTMLElement} container
  * @param {HTMLElement} searchOrigin
  * @param {string} direction
- * @param {boolean} [preferActive]
+ * @param {string} [candidateSelector] If specified returns first candidate matching selector
  */
-function findFocusable(container, searchOrigin, direction, preferActive) {
+function findFocusable(container, searchOrigin, direction, candidateSelector) {
   // Find all focusable siblings that are valid for the given direction
   const candidates = getValidCandidatesForDirection(
     container.querySelectorAll(FOCUSABLE_SELECTOR),
@@ -78,18 +91,23 @@ function findFocusable(container, searchOrigin, direction, preferActive) {
       return;
     }
 
-    return findFocusable(closestContainer, searchOrigin, direction, true);
+    return findFocusable(
+      closestContainer,
+      searchOrigin,
+      direction,
+      closestContainer.dataset.spatialNavigationEnterSelector // When switching containers attempt to use enter selector
+    );
   } else if (candidates.length === 1) {
     return candidates[0];
   }
 
-  if (preferActive) {
-    const activeCandidate = candidates.find((candidate) =>
-      candidate.matches(ACTIVE_SELECTOR)
+  if (candidateSelector) {
+    const candidate = candidates.find((candidate) =>
+      candidate.matches(candidateSelector)
     );
 
-    if (activeCandidate) {
-      return activeCandidate;
+    if (candidate) {
+      return candidate;
     }
   }
 

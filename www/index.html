@@ -2,13 +2,63 @@
   <head>
     <script type="module" src="./index.js"></script>
     <link
-      href="https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css"
+      href="https://unpkg.com/tailwindcss@^2.0/dist/tailwind.min.css"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="./index.css" />
   </head>
   <body>
     <div class="w-3/4 container mx-auto">
+      <h1 class="text-3xl my-5">Player</h1>
+      <div
+        data-spatial-navigation-contain
+        title="player-page"
+        class="flex flex-col justify-end"
+        style="height: 70vh"
+      >
+        <div title="controls">
+          <div
+            title="buttons"
+            data-spatial-navigation-contain
+            data-spatial-navigation-enter-selector="[data-default]"
+            class="flex justify-between"
+          >
+            <button title="skip-previous" data-default>Previous</button>
+            <div class="relative" data-subtitles>
+              <button title="subtitles-menu">Subtitles</button>
+              <div
+                class="absolute bottom-full bg-yellow-300 flex flex-col items-stretch whitespace-nowrap"
+                hidden
+                data-subtitles-menu
+              >
+                <h2>Tilgjengelighet</h2>
+                <button title="a11y-av" data-focusable data-active>Av</button>
+                <button title="a11y-synstolk" data-focusable>Synstolk</button>
+                <h2>Undertekster</h2>
+                <button title="subs-off" data-focusable>Av</button>
+                <button title="subs-norsk" data-focusable data-active>
+                  Norsk
+                </button>
+                <button title="subs-norsk-all" data-focusable>
+                  Norsk på all tale
+                </button>
+                <button title="subs-english" data-focusable>
+                  English (Engelsk)
+                </button>
+              </div>
+            </div>
+            <button title="skip-next">Next</button>
+          </div>
+          <div
+            title="scrubber"
+            data-spatial-navigation-contain
+            class="flex justify-center"
+          >
+            <button title="thumb">Thumb</button>
+          </div>
+        </div>
+      </div>
+
       <h1 class="text-3xl my-5">Front page</h1>
       <div
         data-spatial-navigation-contain
@@ -17,6 +67,7 @@
       >
         <div
           data-spatial-navigation-contain
+          data-spatial-navigation-enter-selector="[data-active]"
           title="menu"
           class="flex justify-center"
         >
@@ -54,6 +105,7 @@
       >
         <div
           data-spatial-navigation-contain
+          data-spatial-navigation-enter-selector="[data-active]"
           title="menu"
           class="flex justify-center"
         >
@@ -120,6 +172,7 @@
       >
         <div
           data-spatial-navigation-contain
+          data-spatial-navigation-enter-selector="[data-active]"
           title="menu"
           class="flex justify-center"
         >
@@ -130,6 +183,7 @@
         <div class="flex">
           <div
             data-spatial-navigation-contain
+            data-spatial-navigation-enter-selector="[data-active]"
             title="episode-list"
             class="flex flex-col w-1/3"
           >
