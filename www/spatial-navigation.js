@@ -1,12 +1,12 @@
-// @ts-check
-
 /**
  * @typedef {'down'|'left'|'right'|'up' } Direction
  */
 
 export const CONTAINER_SELECTOR = '[data-spatial-navigation-contain]';
 export const FOCUSABLE_SELECTOR = '[tabindex], a[href], button:not([disabled])';
-export const DIRECTION_BY_KEY = {
+
+/** @enum {string} */
+const DIRECTION_BY_KEY = {
   ArrowDown: 'down',
   ArrowLeft: 'left',
   ArrowRight: 'right',
@@ -40,7 +40,8 @@ function handleKeyDown(event) {
     return;
   }
 
-  const direction = DIRECTION_BY_KEY[event.key];
+  const direction =
+    DIRECTION_BY_KEY[/** @type {keyof typeof DIRECTION_BY_KEY} */ (event.key)];
 
   if (!direction) {
     return;
@@ -49,7 +50,7 @@ function handleKeyDown(event) {
   event.preventDefault();
 
   const searchOrigin = /** @type {HTMLElement}*/ (event.target);
-  const container = /** @type {HTMLElement}*/ (searchOrigin.closest(
+  const container = /** @type {HTMLElement}*/ (searchOrigin?.closest(
     CONTAINER_SELECTOR
   ));
 
@@ -57,7 +58,11 @@ function handleKeyDown(event) {
     return;
   }
 
-  const focusable = findFocusable(container, searchOrigin, direction);
+  const focusable = findFocusable(
+    container,
+    searchOrigin,
+    /** @type {Direction} */ (direction)
+  );
 
   if (focusable) {
     focusable.focus();
@@ -70,6 +75,7 @@ function handleKeyDown(event) {
  * @param {HTMLElement} searchOrigin
  * @param {Direction} direction
  * @param {string} [candidateSelector] If specified returns first candidate matching selector
+ * @returns {HTMLElement | undefined}
  */
 function findFocusable(container, searchOrigin, direction, candidateSelector) {
   // Find all focusable siblings that are valid for the given direction
@@ -121,7 +127,7 @@ function findFocusable(container, searchOrigin, direction, candidateSelector) {
  * @param {Array<HTMLElement>} candidates
  * @param {HTMLElement} searchOrigin
  * @param {Direction} direction
- * @returns {HTMLElement}
+ * @returns {HTMLElement | undefined}
  */
 function getClosestCandidate(candidates, searchOrigin, direction) {
   const searchOriginRect = searchOrigin.getBoundingClientRect();
@@ -154,30 +160,35 @@ function getClosestCandidate(candidates, searchOrigin, direction) {
  * @param {HTMLElement} container
  * @param {HTMLElement} searchOrigin
  * @param {Direction} direction
+ * @returns {HTMLElement | undefined}
  */
 function getClosestContainer(container, searchOrigin, direction) {
-  const parentContainer = container.parentElement.closest(CONTAINER_SELECTOR);
-  const containers = getValidCandidatesForDirection(
-    parentContainer.querySelectorAll(CONTAINER_SELECTOR),
-    container,
-    direction
-  );
+  const parentContainer = container.parentElement?.closest(CONTAINER_SELECTOR);
 
-  return getClosestCandidate(containers, searchOrigin, direction);
+  if (parentContainer) {
+    const containers = getValidCandidatesForDirection(
+      parentContainer.querySelectorAll(CONTAINER_SELECTOR),
+      container,
+      direction
+    );
+
+    return getClosestCandidate(containers, searchOrigin, direction);
+  }
 }
 
 /**
  * Given an element and set of candidates, return those that are valid for the given direction
- * @param {NodeListOf<Element>} candidates
+ * @param {NodeListOf<HTMLElement>} candidates
  * @param {HTMLElement} searchOrigin
  * @param {Direction} direction
  * @returns {Array<HTMLElement>}
  */
 function getValidCandidatesForDirection(candidates, searchOrigin, direction) {
   const searchOriginRect = searchOrigin.getBoundingClientRect();
+  /** @type {Array<HTMLElement>} */
   const validCandidates = [];
 
-  for (const candidate of candidates) {
+  for (const candidate of Array.from(candidates)) {
     if (
       candidate !== searchOrigin &&
       isValidForDirection(
@@ -190,7 +201,7 @@ function getValidCandidatesForDirection(candidates, searchOrigin, direction) {
     }
   }
 
-  return /** @type {Array<HTMLElement>} */ (validCandidates);
+  return validCandidates;
 }
 
 /**
