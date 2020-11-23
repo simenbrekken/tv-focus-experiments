@@ -2,7 +2,7 @@
   <head>
     <script type="module" src="./index.js"></script>
     <link
-      href="https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css"
+      href="https://unpkg.com/tailwindcss@^2.0/dist/tailwind.min.css"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="./index.css" />
@@ -24,7 +24,29 @@
             class="flex justify-between"
           >
             <button title="skip-previous" data-default>Previous</button>
-            <button title="subtitles-menu" data-subtitles>Subtitles</button>
+            <div class="relative" data-subtitles>
+              <button title="subtitles-menu">Subtitles</button>
+              <div
+                class="absolute bottom-full bg-yellow-300 flex flex-col items-stretch whitespace-nowrap"
+                hidden
+                data-subtitles-menu
+              >
+                <h2>Tilgjengelighet</h2>
+                <button title="a11y-av" data-focusable data-active>Av</button>
+                <button title="a11y-synstolk" data-focusable>Synstolk</button>
+                <h2>Undertekster</h2>
+                <button title="subs-off" data-focusable>Av</button>
+                <button title="subs-norsk" data-focusable data-active>
+                  Norsk
+                </button>
+                <button title="subs-norsk-all" data-focusable>
+                  Norsk på all tale
+                </button>
+                <button title="subs-english" data-focusable>
+                  English (Engelsk)
+                </button>
+              </div>
+            </div>
             <button title="skip-next">Next</button>
           </div>
           <div

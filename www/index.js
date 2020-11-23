@@ -9,12 +9,25 @@ const DIRECTION_BY_KEY = {
   ArrowUp: 'up',
 };
 
+document.addEventListener('focusin', handleFocusIn);
 document.addEventListener('keydown', handleKeyDown);
+
+function handleFocusIn(event) {
+  const subtitlesMenu = /** @type {HTMLElement}*/ (document.querySelector(
+    '[data-subtitles-menu]'
+  ));
+
+  if (subtitlesMenu) {
+    subtitlesMenu.hidden = event.target.closest('[data-subtitles]') === null;
+  }
+}
 
 /**
  * @param {KeyboardEvent} event
  */
 function handleKeyDown(event) {
+  event.preventDefault();
+
   const direction = DIRECTION_BY_KEY[event.key];
 
   if (!direction) {

@@ -3,6 +3,10 @@
   background-color: rgba(0, 255, 0, 0.2);
 }
 
+[hidden] {
+  display: none;
+}
+
 [tabindex],
 a[href],
 button:not([disabled]) {
