@@ -1,4 +1,9 @@
 // @ts-check
+
+/**
+ * @typedef {'down'|'left'|'right'|'up' } Direction
+ */
+
 export const CONTAINER_SELECTOR = '[data-spatial-navigation-contain]';
 export const FOCUSABLE_SELECTOR = '[tabindex], a[href], button:not([disabled])';
 export const DIRECTION_BY_KEY = {
@@ -60,10 +65,10 @@ function handleKeyDown(event) {
 }
 
 /**
- * Locate focusable element in "direction"
+ * Given an element and parent container, locate focusable element in a given direction
  * @param {HTMLElement} container
  * @param {HTMLElement} searchOrigin
- * @param {string} direction
+ * @param {Direction} direction
  * @param {string} [candidateSelector] If specified returns first candidate matching selector
  */
 function findFocusable(container, searchOrigin, direction, candidateSelector) {
@@ -115,7 +120,7 @@ function findFocusable(container, searchOrigin, direction, candidateSelector) {
  * Given an element and set of candidates, find the closest in a given direction
  * @param {Array<HTMLElement>} candidates
  * @param {HTMLElement} searchOrigin
- * @param {string} direction
+ * @param {Direction} direction
  * @returns {HTMLElement}
  */
 function getClosestCandidate(candidates, searchOrigin, direction) {
@@ -145,9 +150,10 @@ function getClosestCandidate(candidates, searchOrigin, direction) {
 }
 
 /**
+ * Retrieve closest sibling container in a give direction
  * @param {HTMLElement} container
  * @param {HTMLElement} searchOrigin
- * @param {string} direction
+ * @param {Direction} direction
  */
 function getClosestContainer(container, searchOrigin, direction) {
   const parentContainer = container.parentElement.closest(CONTAINER_SELECTOR);
@@ -164,7 +170,7 @@ function getClosestContainer(container, searchOrigin, direction) {
  * Given an element and set of candidates, return those that are valid for the given direction
  * @param {NodeListOf<Element>} candidates
  * @param {HTMLElement} searchOrigin
- * @param {string} direction
+ * @param {Direction} direction
  * @returns {Array<HTMLElement>}
  */
 function getValidCandidatesForDirection(candidates, searchOrigin, direction) {
@@ -190,7 +196,7 @@ function getValidCandidatesForDirection(candidates, searchOrigin, direction) {
 /**
  * @param {DOMRect} rectA
  * @param {DOMRect} rectB
- * @param {string} direction
+ * @param {Direction} direction
  */
 function isValidForDirection(rectA, rectB, direction) {
   switch (direction) {
@@ -208,7 +214,7 @@ function isValidForDirection(rectA, rectB, direction) {
 /**
  * @param {DOMRect} rectA
  * @param {DOMRect} rectB
- * @param {string} direction
+ * @param {Direction} direction
  */
 function getDistanceInDirection(rectA, rectB, direction) {
   const { sideA, sideB, distance } = getRectSidesForDirection(
@@ -237,7 +243,7 @@ function getDistanceInDirection(rectA, rectB, direction) {
  * Retrieve nearest sides of two rects based on a given direction
  * @param {DOMRect} rectA
  * @param {DOMRect} rectB
- * @param {string} direction
+ * @param {Direction} direction
  */
 function getRectSidesForDirection(rectA, rectB, direction) {
   switch (direction) {
