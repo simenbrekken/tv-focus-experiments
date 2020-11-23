@@ -14,27 +14,14 @@ const DIRECTION_BY_KEY = {
 };
 
 /**
- * Enable spatial navigation with keyboard Arrow keys
- */
-export function enableSpatialNavigation() {
-  document.addEventListener('keydown', handleKeyDown);
-}
-
-/**
- * Disable spatial navigation
- */
-export function disableSpatialNavigation() {
-  document.removeEventListener('keydown', handleKeyDown);
-}
-
-/**
- * Handle keydown event
+ * Retrieve spatial navigation direction from KeyboardEvent
  * @param {KeyboardEvent} event
+ * @returns {Direction | undefined}
  */
-function handleKeyDown(event) {
+export function getSpatialNavigationDirectionFromEvent(event) {
   if (
     event.defaultPrevented ||
-    // Bail if entering text into input/textarea
+    // Ignore if entering text into input/textarea
     event.target instanceof HTMLInputElement ||
     event.target instanceof HTMLTextAreaElement
   ) {
@@ -44,14 +31,17 @@ function handleKeyDown(event) {
   const direction =
     DIRECTION_BY_KEY[/** @type {keyof typeof DIRECTION_BY_KEY} */ (event.key)];
 
-  if (!direction) {
-    return;
-  }
+  return /** @type {Direction} */ (direction);
+}
 
-  event.preventDefault();
-
-  const searchOrigin = /** @type {HTMLElement}*/ (event.target);
-  const container = /** @type {HTMLElement}*/ (searchOrigin?.closest(
+/**
+ * Given an element, retrieve a spatial navigation candidate for a given direction
+ * @param {HTMLElement} fromElement
+ * @param {Direction} direction
+ * @returns {HTMLElement | undefined}
+ */
+export function getSpatialNavigationCandidate(fromElement, direction) {
+  const container = /** @type {HTMLElement}*/ (fromElement.closest(
     CONTAINER_SELECTOR
   ));
 
@@ -59,11 +49,7 @@ function handleKeyDown(event) {
     return;
   }
 
-  const focusable = findFocusable(
-    container,
-    searchOrigin,
-    /** @type {Direction} */ (direction)
-  );
+  const focusable = findFocusable(container, fromElement, direction);
 
   if (focusable) {
     focusable.focus();

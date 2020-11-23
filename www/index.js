@@ -1,13 +1,23 @@
 // @ts-check
 import {
-  enableSpatialNavigation,
+  getSpatialNavigationCandidate,
+  getSpatialNavigationDirectionFromEvent,
   FOCUSABLE_SELECTOR,
 } from './spatial-navigation.js';
 
 document.addEventListener('click', handleClick);
 document.addEventListener('focusin', handleFocusIn);
+document.addEventListener('keydown', (event) => {
+  const direction = getSpatialNavigationDirectionFromEvent(event);
 
-enableSpatialNavigation();
+  if (direction) {
+    event.preventDefault();
+    getSpatialNavigationCandidate(
+      /** @type {HTMLElement}*/ (event.target),
+      direction
+    )?.focus();
+  }
+});
 
 function handleFocusIn(event) {
   const subtitlesMenu = /** @type {HTMLElement}*/ (document.querySelector(
