@@ -32,8 +32,9 @@ export function disableSpatialNavigation() {
  * @param {KeyboardEvent} event
  */
 function handleKeyDown(event) {
-  // Bail if entering text into input/textarea
   if (
+    event.defaultPrevented ||
+    // Bail if entering text into input/textarea
     event.target instanceof HTMLInputElement ||
     event.target instanceof HTMLTextAreaElement
   ) {
