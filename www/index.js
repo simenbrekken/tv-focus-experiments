@@ -30,7 +30,7 @@ function handleKeyDown(event) {
     return;
   }
 
-  const focusable = findFocusable(container, searchOrigin, direction, true);
+  const focusable = findFocusable(container, searchOrigin, direction);
 
   if (focusable) {
     focusable.focus();
@@ -41,9 +41,9 @@ function handleKeyDown(event) {
  * @param {HTMLElement} container
  * @param {HTMLElement} searchOrigin
  * @param {string} direction
- * @param {boolean} preferActive
+ * @param {string} [candidateSelector] If specified returns first candidate matching selector
  */
-function findFocusable(container, searchOrigin, direction, preferActive) {
+function findFocusable(container, searchOrigin, direction, candidateSelector) {
   const candidates = /** @type {Array<HTMLElement>}*/ (Array.from(
     container.querySelectorAll(FOCUSABLE_SELECTOR)
   ));
@@ -95,20 +95,25 @@ function findFocusable(container, searchOrigin, direction, preferActive) {
       return;
     }
 
-    return findFocusable(closestContainer, searchOrigin, direction, true);
+    return findFocusable(
+      closestContainer,
+      searchOrigin,
+      direction,
+      closestContainer.dataset.enterSelector // When switching containers
+    );
   } else if (
     candidatesExcludingSourceOriginAndInvalidForDirection.length === 1
   ) {
     return candidatesExcludingSourceOriginAndInvalidForDirection[0];
   }
 
-  if (preferActive) {
-    const activeCandidate = candidatesExcludingSourceOriginAndInvalidForDirection.find(
-      (candidate) => candidate.matches(ACTIVE_SELECTOR)
+  if (candidateSelector) {
+    const candidate = candidatesExcludingSourceOriginAndInvalidForDirection.find(
+      (candidate) => candidate.matches(candidateSelector)
     );
 
-    if (activeCandidate) {
-      return activeCandidate;
+    if (candidate) {
+      return candidate;
     }
   }
 
