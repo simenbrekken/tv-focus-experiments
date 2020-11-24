@@ -125,7 +125,6 @@ function getClosestCandidate(candidates, searchOrigin, direction) {
   for (const candidate of candidates) {
     if (candidate !== searchOrigin) {
       const candidateRect = candidate.getBoundingClientRect();
-
       let distance = getDistanceInDirection(
         searchOriginRect,
         candidateRect,
@@ -176,19 +175,27 @@ function getValidCandidatesForDirection(candidates, searchOrigin, direction) {
   const validCandidates = [];
 
   for (const candidate of Array.from(candidates)) {
+    const candidateRect = candidate.getBoundingClientRect();
+
     if (
       candidate !== searchOrigin &&
-      isValidForDirection(
-        searchOriginRect,
-        candidate.getBoundingClientRect(),
-        direction
-      )
+      isVisibleRect(candidateRect) &&
+      isValidForDirection(searchOriginRect, candidateRect, direction)
     ) {
       validCandidates.push(candidate);
     }
   }
 
   return validCandidates;
+}
+
+/**
+ * Determine if a Rect belongs to a visible element (including hidden parent containers)
+ * @param {DOMRect} rect
+ * @see https://github.com/jquery/jquery/blob/a503c691dc06c59acdafef6e54eca2613c6e4032/src/css/hiddenVisibleSelectors.js
+ */
+function isVisibleRect(rect) {
+  return rect.width !== 0 || rect.height !== 0;
 }
 
 /**
